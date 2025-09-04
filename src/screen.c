@@ -6,10 +6,10 @@ void initScreenBuffer(struct ScreenBuffer *sb)
 {
     if (sb == NULL)
         return;
-    sb->buffer = malloc(BUFFER_SIZE * sizeof(unsigned char));
+    sb->buffer = malloc(BUFFER_SIZE * sizeof(struct Color));
     if (sb->buffer)
     {
-        memset(sb->buffer, 0, BUFFER_SIZE);
+        memset(sb->buffer, 0, BUFFER_SIZE * sizeof(struct Color));
     }
 }
 
@@ -32,18 +32,18 @@ int getIndex(int x, int y)
     return WIDTH * yi + xi;
 }
 
-const unsigned char get(const struct ScreenBuffer *sb, int x, int y)
+const struct Color get(const struct ScreenBuffer *sb, int x, int y)
 {
     if (sb == NULL)
-        return 0;
+        return (struct Color){.r = 0, .g = 0, .b = 0};
     int index = getIndex(x, y);
     if (index == -1)
-        return 0;
+        return (struct Color){.r = 0, .g = 0, .b = 0};
 
     return sb->buffer[index];
 }
 
-void set(struct ScreenBuffer *sb, int x, int y, char value)
+void set(struct ScreenBuffer *sb, int x, int y, struct Color color)
 {
     if (sb == NULL)
         return;
@@ -52,10 +52,10 @@ void set(struct ScreenBuffer *sb, int x, int y, char value)
     if (index == -1)
         return;
 
-    sb->buffer[index] = value;
+    sb->buffer[index] = color;
 }
 
-const char *display(struct ScreenBuffer *sb)
+const char *display(const struct ScreenBuffer *sb)
 {
     if (sb == NULL)
         return 0;
@@ -68,9 +68,11 @@ const char *display(struct ScreenBuffer *sb)
 
     for (int y = -Y_OFFSET; y < HEIGHT - Y_OFFSET; y++)
     {
-        for (int x = X_OFFSET; x < WIDTH - X_OFFSET; x++)
+        for (int x = -X_OFFSET; x < WIDTH - X_OFFSET; x++)
         {
-            result[pos++] = get(sb, x, y) ? '?' : ' ';
+            unsigned char gray = toGray(get(sb, x, y));
+            int gradientIndex = gray * (sizeof(GRADIENT) - 1) / 255;
+            result[pos++] = GRADIENT[gradientIndex];
         }
         result[pos++] = '\n';
     }
