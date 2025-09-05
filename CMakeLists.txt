@@ -9,3 +9,4 @@ file(GLOB SRC_FILES src/*.c)
 
 add_executable(rasterizer-c ${SRC_FILES})
 target_include_directories(rasterizer-c PRIVATE include)
+target_link_libraries(rasterizer-c m)
