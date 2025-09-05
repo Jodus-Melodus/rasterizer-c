@@ -14,5 +14,6 @@ struct Vector3
 };
 
 void initVector(float *vectorData, const float *source, size_t size);
+float getVector(float *vectorData, size_t size, size_t index);
 
 #endif
