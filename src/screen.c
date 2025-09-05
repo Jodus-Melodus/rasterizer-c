@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "screen.h"
+#include "utils.h"
 
 void initScreenBuffer(struct ScreenBuffer *sb)
 {
@@ -78,4 +80,34 @@ const char *display(const struct ScreenBuffer *sb)
     }
     result[pos] = '\0';
     return result;
+}
+
+void drawTriangle(struct ScreenBuffer *sb, struct Vector2 a, struct Vector2 b, struct Vector2 c, struct Color color)
+{
+    int maxX = (int)ceil(max(a.data[0], max(b.data[0], c.data[0])));
+    int minX = (int)floor(min(a.data[0], min(b.data[0], c.data[0])));
+    int maxY = (int)ceil(max(a.data[1], max(b.data[1], c.data[1])));
+    int minY = (int)floor(min(a.data[1], min(b.data[1], c.data[1])));
+
+    for (int y = minY; y < maxY; y++)
+    {
+        for (int x = minX; x < maxX; x++)
+        {
+            struct Vector2 p = {{x, y}};
+
+            if (calculateBarycentricCoordinates(p, a, b, c) == 1)
+            {
+                set(sb, x, y, color);
+            }
+        }
+    }
+}
+
+int calculateBarycentricCoordinates(struct Vector2 p, struct Vector2 a, struct Vector2 b, struct Vector2 c)
+{
+    float denominator = (b.data[1] - c.data[1]) * (a.data[0] - c.data[0]) + (c.data[0] - b.data[0]) * (a.data[1] - c.data[1]);
+    float u = ((b.data[1] - c.data[1]) * (p.data[0] - c.data[0]) + (c.data[0] - b.data[0]) * (p.data[1] - c.data[1])) / denominator;
+    float v = ((c.data[1] - a.data[1]) * (p.data[0] - c.data[0]) + (a.data[0] - c.data[0]) * (p.data[1] - c.data[1])) / denominator;
+    float w = 1.0 - u - v;
+    return (u >= 0.0) && (v >= 0.0) && (w >= 0.0);
 }
