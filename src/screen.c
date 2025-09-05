@@ -1,6 +1,6 @@
-#include "screen.h"
 #include <stdlib.h>
 #include <string.h>
+#include "screen.h"
 
 void initScreenBuffer(struct ScreenBuffer *sb)
 {

@@ -1,5 +1,5 @@
-#include "vector.h"
 #include <string.h>
+#include "vector.h"
 
 void initVector(float *vectorData, const float *source, size_t size)
 {
