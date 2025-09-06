@@ -3,7 +3,6 @@
 #include <math.h>
 #include <stdio.h>
 #include "screen.h"
-#include "utils.h"
 
 void initScreenBuffer(ScreenBuffer *sb)
 {
