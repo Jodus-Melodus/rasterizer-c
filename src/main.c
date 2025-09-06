@@ -5,16 +5,12 @@
 
 int main()
 {
-    struct ScreenBuffer screen;
+    ScreenBuffer screen;
     initScreenBuffer(&screen);
-    struct Vector2 a, b, c;
-    float a_init[2] = {-10.0, -10.0};
-    float b_init[2] = {10.0, -10.0};
-    float c_init[2] = {0.0, 10.0};
-    initVector(a.data, a_init, 2);
-    initVector(b.data, b_init, 2);
-    initVector(c.data, c_init, 2);
-    struct Color color = {255, 255, 255};
+    Vector2 a = {-10.0, -10.0};
+    Vector2 b = {10.0, -10.0};
+    Vector2 c = {0.0, 10.0};
+    Color color = {255, 255, 255};
 
     drawTriangle(&screen, a, b, c, color);
 

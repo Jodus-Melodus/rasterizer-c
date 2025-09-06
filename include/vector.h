@@ -3,17 +3,14 @@
 
 #include <stddef.h>
 
-struct Vector2
+typedef struct
 {
-    float data[2];
-};
+    float x, y;
+} Vector2;
 
-struct Vector3
+typedef struct
 {
-    float data[3];
-};
-
-void initVector(float *vectorData, const float *source, size_t size);
-float getVector(float *vectorData, size_t size, size_t index);
+    float x, y, z;
+} Vector3;
 
 #endif

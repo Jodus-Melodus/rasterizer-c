@@ -13,17 +13,17 @@
 
 static const char GRADIENT[10] = {' ', '.', ':', '-', '=', '+', '*', '#', '%', '@'};
 
-struct ScreenBuffer
+typedef struct
 {
-    struct Color *buffer;
-};
+    Color *buffer;
+} ScreenBuffer;
 
-void initScreenBuffer(struct ScreenBuffer *sb);
-void freeScreenBuffer(struct ScreenBuffer *sb);
+void initScreenBuffer(ScreenBuffer *sb);
+void freeScreenBuffer(ScreenBuffer *sb);
 int getIndex(int x, int y);
-const struct Color get(const struct ScreenBuffer *sb, int x, int y);
-void set(struct ScreenBuffer *sb, int x, int y, struct Color color);
-const char *display(const struct ScreenBuffer *sb);
-void drawTriangle(struct ScreenBuffer *sb, struct Vector2 a, struct Vector2 b, struct Vector2 c, struct Color color);
-int calculateBarycentricCoordinates(struct Vector2 p, struct Vector2 a, struct Vector2 b, struct Vector2 c);
+const Color get(const ScreenBuffer *sb, int x, int y);
+void set(ScreenBuffer *sb, int x, int y, Color color);
+const char *display(const ScreenBuffer *sb);
+void drawTriangle(ScreenBuffer *sb, Vector2 a, Vector2 b, Vector2 c, Color color);
+int calculateBarycentricCoordinates(Vector2 p, Vector2 a, Vector2 b, Vector2 c);
 #endif

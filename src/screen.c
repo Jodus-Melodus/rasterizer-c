@@ -4,18 +4,18 @@
 #include "screen.h"
 #include "utils.h"
 
-void initScreenBuffer(struct ScreenBuffer *sb)
+void initScreenBuffer(ScreenBuffer *sb)
 {
     if (sb == NULL)
         return;
-    sb->buffer = malloc(BUFFER_SIZE * sizeof(struct Color));
+    sb->buffer = malloc(BUFFER_SIZE * sizeof(Color));
     if (sb->buffer)
     {
-        memset(sb->buffer, 0, BUFFER_SIZE * sizeof(struct Color));
+        memset(sb->buffer, 0, BUFFER_SIZE * sizeof(Color));
     }
 }
 
-void freeScreenBuffer(struct ScreenBuffer *sb)
+void freeScreenBuffer(ScreenBuffer *sb)
 {
     if (sb == NULL)
         return;
@@ -34,18 +34,18 @@ int getIndex(int x, int y)
     return WIDTH * yi + xi;
 }
 
-const struct Color get(const struct ScreenBuffer *sb, int x, int y)
+const Color get(const ScreenBuffer *sb, int x, int y)
 {
     if (sb == NULL)
-        return (struct Color){.r = 0, .g = 0, .b = 0};
+        return (Color){.r = 0, .g = 0, .b = 0};
     int index = getIndex(x, y);
     if (index == -1)
-        return (struct Color){.r = 0, .g = 0, .b = 0};
+        return (Color){.r = 0, .g = 0, .b = 0};
 
     return sb->buffer[index];
 }
 
-void set(struct ScreenBuffer *sb, int x, int y, struct Color color)
+void set(ScreenBuffer *sb, int x, int y, Color color)
 {
     if (sb == NULL)
         return;
@@ -57,7 +57,7 @@ void set(struct ScreenBuffer *sb, int x, int y, struct Color color)
     sb->buffer[index] = color;
 }
 
-const char *display(const struct ScreenBuffer *sb)
+const char *display(const ScreenBuffer *sb)
 {
     if (sb == NULL)
         return 0;
@@ -82,18 +82,18 @@ const char *display(const struct ScreenBuffer *sb)
     return result;
 }
 
-void drawTriangle(struct ScreenBuffer *sb, struct Vector2 a, struct Vector2 b, struct Vector2 c, struct Color color)
+void drawTriangle(ScreenBuffer *sb, Vector2 a, Vector2 b, Vector2 c, Color color)
 {
-    int maxX = (int)ceil(max(a.data[0], max(b.data[0], c.data[0])));
-    int minX = (int)floor(min(a.data[0], min(b.data[0], c.data[0])));
-    int maxY = (int)ceil(max(a.data[1], max(b.data[1], c.data[1])));
-    int minY = (int)floor(min(a.data[1], min(b.data[1], c.data[1])));
+    int maxX = (int)ceil(max(a.x, max(b.x, c.x)));
+    int minX = (int)floor(min(a.x, min(b.x, c.x)));
+    int maxY = (int)ceil(max(a.y, max(b.y, c.y)));
+    int minY = (int)floor(min(a.y, min(b.y, c.y)));
 
     for (int y = minY; y < maxY; y++)
     {
         for (int x = minX; x < maxX; x++)
         {
-            struct Vector2 p = {{x, y}};
+            Vector2 p = {x, y};
 
             if (calculateBarycentricCoordinates(p, a, b, c) == 1)
             {
@@ -103,11 +103,11 @@ void drawTriangle(struct ScreenBuffer *sb, struct Vector2 a, struct Vector2 b, s
     }
 }
 
-int calculateBarycentricCoordinates(struct Vector2 p, struct Vector2 a, struct Vector2 b, struct Vector2 c)
+int calculateBarycentricCoordinates(Vector2 p, Vector2 a, Vector2 b, Vector2 c)
 {
-    float denominator = (b.data[1] - c.data[1]) * (a.data[0] - c.data[0]) + (c.data[0] - b.data[0]) * (a.data[1] - c.data[1]);
-    float u = ((b.data[1] - c.data[1]) * (p.data[0] - c.data[0]) + (c.data[0] - b.data[0]) * (p.data[1] - c.data[1])) / denominator;
-    float v = ((c.data[1] - a.data[1]) * (p.data[0] - c.data[0]) + (a.data[0] - c.data[0]) * (p.data[1] - c.data[1])) / denominator;
+    float denominator = (b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y);
+    float u = ((b.y - c.y) * (p.x - c.x) + (c.x - b.x) * (p.y - c.y)) / denominator;
+    float v = ((c.y - a.y) * (p.x - c.x) + (a.x - c.x) * (p.y - c.y)) / denominator;
     float w = 1.0 - u - v;
     return (u >= 0.0) && (v >= 0.0) && (w >= 0.0);
 }
