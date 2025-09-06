@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <stdio.h>
 #include "screen.h"
 #include "utils.h"
 
@@ -110,4 +111,25 @@ int calculateBarycentricCoordinates(Vector2 p, Vector2 a, Vector2 b, Vector2 c)
     float v = ((c.y - a.y) * (p.x - c.x) + (a.x - c.x) * (p.y - c.y)) / denominator;
     float w = 1.0 - u - v;
     return (u >= 0.0) && (v >= 0.0) && (w >= 0.0);
+}
+
+Vector2 *projectCoordinate(const Vector3 p, const float focalLength)
+{
+    float denominator = focalLength + p.z;
+    if (denominator == 0.0)
+    {
+        perror("Division by ");
+        return NULL;
+    }
+    float projectedX = (focalLength * p.x) / denominator;
+    float projectedY = (focalLength * p.y) / denominator;
+    Vector2 *projected = malloc(sizeof(Vector2));
+    if (projected == NULL)
+    {
+        perror("Allocation failed");
+        return NULL;
+    }
+    projected->x = projectedX;
+    projected->y = projectedY;
+    return projected;
 }
