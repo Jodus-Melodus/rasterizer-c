@@ -3,16 +3,16 @@
 
 #include "vector.h"
 
-struct Model
+typedef struct
 {
     size_t vertexCount;
-    struct Vector3 *vertices;
+    Vector3 *vertices;
     size_t faceCount;
     size_t (*faces)[3];
-};
+} Model;
 
-int initModel(struct Model *model);
-int loadModelFromFile(struct Model *model, const char *path);
-int freeModel(struct Model *model);
+int initModel(Model *model);
+int loadModelFromFile(Model *model, const char *path);
+int freeModel(Model *model);
 
 #endif

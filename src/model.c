@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "model.h"
 
-int initModel(struct Model *model)
+int initModel(Model *model)
 {
     model->vertices = NULL;
     model->faces = NULL;
@@ -12,7 +12,7 @@ int initModel(struct Model *model)
     return 0;
 }
 
-int loadModelFromFile(struct Model *model, const char *path)
+int loadModelFromFile(Model *model, const char *path)
 {
     FILE *file = fopen(path, "r");
     if (file == NULL)
@@ -33,10 +33,9 @@ int loadModelFromFile(struct Model *model, const char *path)
             {
                 fprintf(stderr, "Invalid vertext line: %s\n", lineBuffer);
                 continue;
-                ;
-            }
-            struct Vector3 vec = {x, y, z};
-            struct Vector3 *newVertexPointer = realloc(model->vertices, (model->vertexCount + 1) * sizeof(struct Vector3));
+                        }
+            Vector3 vec = {x, y, z};
+            Vector3 *newVertexPointer = realloc(model->vertices, (model->vertexCount + 1) * sizeof(Vector3));
             if (newVertexPointer == NULL)
             {
                 free(model->vertices);
@@ -102,7 +101,7 @@ int loadModelFromFile(struct Model *model, const char *path)
     return 0;
 }
 
-int freeModel(struct Model *model)
+int freeModel(Model *model)
 {
     free(model->faces);
     free(model->vertices);
