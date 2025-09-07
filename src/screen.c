@@ -10,9 +10,7 @@ void initScreenBuffer(ScreenBuffer *sb)
         return;
     sb->buffer = malloc(BUFFER_SIZE * sizeof(Color));
     if (sb->buffer)
-    {
         memset(sb->buffer, 0, BUFFER_SIZE * sizeof(Color));
-    }
 }
 
 void freeScreenBuffer(ScreenBuffer *sb)
@@ -96,9 +94,7 @@ void drawTriangle(ScreenBuffer *sb, Vector2 a, Vector2 b, Vector2 c, Color color
             Vector2 p = {x, y};
 
             if (calculateBarycentricCoordinates(p, a, b, c) == 1)
-            {
                 set(sb, x, y, color);
-            }
         }
     }
 }
@@ -116,10 +112,7 @@ Vector2 *projectCoordinate(const Vector3 p, const float focalLength)
 {
     float denominator = focalLength + p.z;
     if (denominator == 0.0)
-    {
-        perror("Division by ");
-        return NULL;
-    }
+        denominator = 0.00001;
     float projectedX = (focalLength * p.x) / denominator;
     float projectedY = (focalLength * p.y) / denominator;
     Vector2 *projected = malloc(sizeof(Vector2));

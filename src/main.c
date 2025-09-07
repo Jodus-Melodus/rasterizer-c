@@ -43,9 +43,7 @@ int main()
         {
             int ch = _getch();
             if (ch == 27)
-            {
                 running = 0;
-            }
         }
 
         Vector2 a = {-10, -10};
@@ -55,7 +53,6 @@ int main()
         drawTriangle(&screen, a, b, c, color);
 
         printf("%s", display(&screen));
-
         clearScreenBuffer(&screen);
         Sleep(500);
     }

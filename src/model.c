@@ -33,7 +33,7 @@ int loadModelFromFile(Model *model, const char *path)
             {
                 fprintf(stderr, "Invalid vertext line: %s\n", lineBuffer);
                 continue;
-                        }
+            }
             Vector3 vec = {x, y, z};
             Vector3 *newVertexPointer = realloc(model->vertices, (model->vertexCount + 1) * sizeof(Vector3));
             if (newVertexPointer == NULL)
