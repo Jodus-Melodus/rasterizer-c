@@ -5,8 +5,8 @@
 #include "types.h"
 #include "vector.h"
 
-#define WIDTH 500
-#define HEIGHT 500
+#define WIDTH 208
+#define HEIGHT 50
 #define BUFFER_SIZE (WIDTH * HEIGHT)
 #define X_OFFSET (WIDTH / 2)
 #define Y_OFFSET (HEIGHT / 2)
@@ -27,4 +27,6 @@ const char *display(const ScreenBuffer *sb);
 void drawTriangle(ScreenBuffer *sb, Vector2 a, Vector2 b, Vector2 c, Color color);
 int calculateBarycentricCoordinates(Vector2 p, Vector2 a, Vector2 b, Vector2 c);
 Vector2 *projectCoordinate(const Vector3 p, const float focalLength);
+int clearScreenBuffer(ScreenBuffer *sb);
+
 #endif

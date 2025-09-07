@@ -132,3 +132,14 @@ Vector2 *projectCoordinate(const Vector3 p, const float focalLength)
     projected->y = projectedY;
     return projected;
 }
+
+int clearScreenBuffer(ScreenBuffer *sb)
+{
+    if (sb == NULL)
+        return 1;
+    sb->buffer = malloc(BUFFER_SIZE * sizeof(Color));
+    if (sb->buffer == NULL)
+        return 1;
+    memset(sb->buffer, 0, BUFFER_SIZE * sizeof(Color));
+    return 0;
+}
