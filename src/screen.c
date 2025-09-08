@@ -33,28 +33,34 @@ int getIndex(int x, int y)
     return WIDTH * indexY + indexX;
 }
 
-const Color get(const ScreenBuffer *sb, int x, int y)
+const Color get(const ScreenBuffer *screen, int x, int y)
 {
-    if (sb == NULL)
-        return (Color){.r = 0, .g = 0, .b = 0};
+    Color color;
+    color.r = 0;
+    color.g = 0;
+    color.b = 0;
+    if (!screen)
+        return color;
+
     int index = getIndex(x, y);
     if (index == -1)
-        return (Color){.r = 0, .g = 0, .b = 0};
+        return color;
 
-    return sb->buffer[index];
+    return screen->buffer[index];
 }
 
-void set(ScreenBuffer *sb, int x, int y, Color color)
+int set(ScreenBuffer *screen, int x, int y, Color color)
 {
-    if (sb == NULL)
-        return;
+    if (!screen)
+        return 1;
+
     int index = getIndex(x, y);
-
     if (index == -1)
-        return;
+        return 1;
 
-    sb->buffer[index] = color;
+    screen->buffer[index] = color;
 }
+
 char *displayScreenBuffer(const ScreenBuffer *sb)
 {
     if (sb == NULL)
