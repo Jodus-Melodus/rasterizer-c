@@ -11,8 +11,6 @@
 #define X_OFFSET (WIDTH / 2)
 #define Y_OFFSET (HEIGHT / 2)
 
-static const char GRADIENT[10] = {' ', '.', ':', '-', '=', '+', '*', '#', '%', '@'};
-
 typedef struct
 {
     Color *buffer;
@@ -23,7 +21,7 @@ void freeScreenBuffer(ScreenBuffer *sb);
 int getIndex(int x, int y);
 const Color get(const ScreenBuffer *sb, int x, int y);
 void set(ScreenBuffer *sb, int x, int y, Color color);
-const char *display(const ScreenBuffer *sb);
+const char *displayScreenBuffer(const ScreenBuffer *sb);
 void drawTriangle(ScreenBuffer *sb, Vector2 a, Vector2 b, Vector2 c, Color color);
 int calculateBarycentricCoordinates(Vector2 p, Vector2 a, Vector2 b, Vector2 c);
 Vector2 *projectCoordinate(const Vector3 p, const float focalLength);

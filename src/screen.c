@@ -55,7 +55,7 @@ void set(ScreenBuffer *sb, int x, int y, Color color)
     sb->buffer[index] = color;
 }
 
-const char *display(const ScreenBuffer *sb)
+const char *displayScreenBuffer(const ScreenBuffer *sb)
 {
     if (sb == NULL)
         return 0;

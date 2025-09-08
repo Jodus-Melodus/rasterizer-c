@@ -52,7 +52,7 @@ int main()
         Color color = {255, 255, 255};
         drawTriangle(&screen, a, b, c, color);
 
-        printf("%s", display(&screen));
+        printf("%s", displayScreenBuffer(&screen));
         clearScreenBuffer(&screen);
         Sleep(500);
     }
