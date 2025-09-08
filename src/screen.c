@@ -2,7 +2,9 @@
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
+#include <time.h>
 #include "screen.h"
+#include "utils.h"
 
 void initScreenBuffer(ScreenBuffer *sb)
 {
@@ -23,13 +25,13 @@ void freeScreenBuffer(ScreenBuffer *sb)
 
 int getIndex(int x, int y)
 {
-    int xi = x + X_OFFSET;
-    int yi = y + Y_OFFSET;
+    int indexX = x + X_OFFSET;
+    int indexY = y + Y_OFFSET;
 
-    if (xi < 0 || xi >= WIDTH || yi < 0 || yi >= HEIGHT)
+    if (indexX < 0 || indexX >= WIDTH || indexY < 0 || indexY >= HEIGHT)
         return -1;
 
-    return WIDTH * yi + xi;
+    return WIDTH * indexY + indexX;
 }
 
 const Color get(const ScreenBuffer *sb, int x, int y)
@@ -54,8 +56,7 @@ void set(ScreenBuffer *sb, int x, int y, Color color)
 
     sb->buffer[index] = color;
 }
-
-const char *displayScreenBuffer(const ScreenBuffer *sb)
+char *displayScreenBuffer(const ScreenBuffer *sb)
 {
     if (sb == NULL)
         return 0;
@@ -80,12 +81,12 @@ const char *displayScreenBuffer(const ScreenBuffer *sb)
     return result;
 }
 
-void drawTriangle(ScreenBuffer *sb, Vector2 a, Vector2 b, Vector2 c, Color color)
+void drawTriangle(ScreenBuffer *sb, Vector2 *a, Vector2 *b, Vector2 *c, Color color)
 {
-    int maxX = (int)ceil(max(a.x, max(b.x, c.x)));
-    int minX = (int)floor(min(a.x, min(b.x, c.x)));
-    int maxY = (int)ceil(max(a.y, max(b.y, c.y)));
-    int minY = (int)floor(min(a.y, min(b.y, c.y)));
+    int maxX = (int)ceilf(max(a->x, max(b->x, c->x)));
+    int minX = (int)floorf(min(a->x, min(b->x, c->x)));
+    int maxY = (int)ceilf(max(a->y, max(b->y, c->y)));
+    int minY = (int)floorf(min(a->y, min(b->y, c->y)));
 
     for (int y = minY; y < maxY; y++)
     {
@@ -93,46 +94,59 @@ void drawTriangle(ScreenBuffer *sb, Vector2 a, Vector2 b, Vector2 c, Color color
         {
             Vector2 p = {x, y};
 
-            if (calculateBarycentricCoordinates(p, a, b, c) == 1)
+            if (calculateBarycentricCoordinates(&p, a, b, c))
                 set(sb, x, y, color);
         }
     }
 }
 
-int calculateBarycentricCoordinates(Vector2 p, Vector2 a, Vector2 b, Vector2 c)
+int calculateBarycentricCoordinates(Vector2 *p, Vector2 *a, Vector2 *b, Vector2 *c)
 {
-    float denominator = (b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y);
-    float u = ((b.y - c.y) * (p.x - c.x) + (c.x - b.x) * (p.y - c.y)) / denominator;
-    float v = ((c.y - a.y) * (p.x - c.x) + (a.x - c.x) * (p.y - c.y)) / denominator;
+    float denominator = (b->y - c->y) * (a->x - c->x) + (c->x - b->x) * (a->y - c->y);
+    float u = ((b->y - c->y) * (p->x - c->x) + (c->x - b->x) * (p->y - c->y)) / denominator;
+    float v = ((c->y - a->y) * (p->x - c->x) + (a->x - c->x) * (p->y - c->y)) / denominator;
     float w = 1.0 - u - v;
     return (u >= 0.0) && (v >= 0.0) && (w >= 0.0);
 }
 
-Vector2 *projectCoordinate(const Vector3 p, const float focalLength)
+Vector2 projectCoordinate(const Vector3 *p, const float focalLength)
 {
-    float denominator = focalLength + p.z;
+    float denominator = focalLength + p->z;
     if (denominator == 0.0)
         denominator = 0.00001;
-    float projectedX = (focalLength * p.x) / denominator;
-    float projectedY = (focalLength * p.y) / denominator;
-    Vector2 *projected = malloc(sizeof(Vector2));
-    if (projected == NULL)
-    {
-        perror("Allocation failed");
-        return NULL;
-    }
-    projected->x = projectedX;
-    projected->y = projectedY;
+    float projectedX = (focalLength * p->x) / denominator;
+    float projectedY = (focalLength * p->y) / denominator;
+    Vector2 projected = {projectedX, projectedY};
     return projected;
 }
 
 int clearScreenBuffer(ScreenBuffer *sb)
 {
-    if (sb == NULL)
+    if (sb == NULL || sb->buffer == NULL)
         return 1;
-    sb->buffer = malloc(BUFFER_SIZE * sizeof(Color));
-    if (sb->buffer == NULL)
-        return 1;
+
     memset(sb->buffer, 0, BUFFER_SIZE * sizeof(Color));
     return 0;
+}
+
+void drawModel(ScreenBuffer *sb, const Model *model, const float focalLength)
+{
+    for (size_t i = 0; i < model->faceCount; i++)
+    {
+        size_t faceIndex1 = model->faces[i][0];
+        size_t faceIndex2 = model->faces[i][1];
+        size_t faceIndex3 = model->faces[i][2];
+
+        Vector3 *vertices = model->vertices;
+        Vector2 vertex1, vertex2, vertex3;
+        vertex1 = projectCoordinate(&vertices[faceIndex1], focalLength);
+        vertex2 = projectCoordinate(&vertices[faceIndex2], focalLength);
+        vertex3 = projectCoordinate(&vertices[faceIndex3], focalLength);
+        Color color;
+        color.r = randColor();
+        color.g = randColor();
+        color.b = randColor();
+
+        drawTriangle(sb, &vertex1, &vertex2, &vertex3, color);
+    }
 }
