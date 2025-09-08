@@ -10,7 +10,7 @@ Model *initModel()
     model->faces = NULL;
     model->vertexCount = 0;
     model->faceCount = 0;
-    return &model;
+    return model;
 }
 
 int loadModelFromFile(Model *model, const char *path)

@@ -34,17 +34,14 @@ int main()
     SetConsoleSize();
     EnableANSI();
 
-    ScreenBuffer screen;
-    initScreenBuffer(&screen);
-    Model model;
-    initModel(&model);
-    loadModelFromFile(&model, "../../objects/cone.obj");
+    ScreenBuffer *screen = initScreenBuffer();
+    Model *model = initModel();
+    loadModelFromFile(model, "../../objects/cone.obj");
     const float focalLength = 50.0;
 
     int running = 1;
     while (running)
     {
-
         if (_kbhit())
         {
             int ch = _getch();
@@ -52,11 +49,11 @@ int main()
                 running = 0;
         }
 
-        clearScreenBuffer(&screen);
-        drawModel(&screen, &model, focalLength);
+        clearScreenBuffer(screen);
+        drawModel(screen, model, focalLength);
         system("cls");
-        // display
-        printf("");
+        char *display = displayScreenBuffer(screen);
+        printf("%s", display);
         Sleep(100);
     }
 
