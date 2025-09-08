@@ -105,7 +105,7 @@ char *displayScreenBuffer(const ScreenBuffer *screen)
     return output;
 }
 
-void drawTriangle(ScreenBuffer *sb, Vector2 *a, Vector2 *b, Vector2 *c, Color color)
+int drawTriangle(ScreenBuffer *screen, Vector2 *a, Vector2 *b, Vector2 *c, Color color)
 {
     int maxX = (int)ceilf(max(a->x, max(b->x, c->x)));
     int minX = (int)floorf(min(a->x, min(b->x, c->x)));
@@ -118,13 +118,13 @@ void drawTriangle(ScreenBuffer *sb, Vector2 *a, Vector2 *b, Vector2 *c, Color co
         {
             Vector2 p = {x, y};
 
-            if (calculateBarycentricCoordinates(&p, a, b, c))
-                set(sb, x, y, color);
+            if (calculateBarycentricCoordinates(a, b, c, &p))
+                set(screen, x, y, color);
         }
     }
 }
 
-int calculateBarycentricCoordinates(Vector2 *p, Vector2 *a, Vector2 *b, Vector2 *c)
+int calculateBarycentricCoordinates(Vector2 *a, Vector2 *b, Vector2 *c, Vector2 *p)
 {
     float denominator = (b->y - c->y) * (a->x - c->x) + (c->x - b->x) * (a->y - c->y);
     float u = ((b->y - c->y) * (p->x - c->x) + (c->x - b->x) * (p->y - c->y)) / denominator;
@@ -138,9 +138,9 @@ Vector2 projectCoordinate(const Vector3 *p, const float focalLength)
     float denominator = focalLength + p->z;
     if (denominator == 0.0)
         denominator = 0.00001;
-    float projectedX = (focalLength * p->x) / denominator;
-    float projectedY = (focalLength * p->y) / denominator;
-    Vector2 projected = {projectedX, projectedY};
+    Vector2 projected = {
+        (focalLength * p->x) / denominator,
+        (focalLength * p->y) / denominator};
     return projected;
 }
 
