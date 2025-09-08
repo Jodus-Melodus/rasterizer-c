@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <Windows.h>
 #include <conio.h>
+#include <time.h>
 #include "screen.h"
 #include "model.h"
 
@@ -29,16 +30,18 @@ void SetConsoleSize()
 
 int main()
 {
+    srand((unsigned int)time(NULL));
     SetConsoleSize();
     EnableANSI();
-    ScreenBuffer screen;
-    initScreenBuffer(&screen);
+
+    ScreenBuffer *screen = initScreenBuffer();
+    Model *model = initModel();
+    loadModelFromFile(model, "../../objects/cone.obj");
+    const float focalLength = 50.0;
 
     int running = 1;
     while (running)
     {
-        system("cls");
-
         if (_kbhit())
         {
             int ch = _getch();
@@ -46,15 +49,12 @@ int main()
                 running = 0;
         }
 
-        Vector2 a = {-10, -10};
-        Vector2 b = {10, -10};
-        Vector2 c = {0, 10};
-        Color color = {255, 255, 255};
-        drawTriangle(&screen, a, b, c, color);
-
-        printf("%s", display(&screen));
-        clearScreenBuffer(&screen);
-        Sleep(500);
+        clearScreenBuffer(screen);
+        drawModel(screen, model, focalLength);
+        system("cls");
+        char *display = displayScreenBuffer(screen);
+        printf("%s", display);
+        Sleep(100);
     }
 
     return 0;
