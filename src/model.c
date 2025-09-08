@@ -3,13 +3,14 @@
 #include <stdlib.h>
 #include "model.h"
 
-int initModel(Model *model)
+Model *initModel()
 {
+    Model *model = malloc(sizeof(Model));
     model->vertices = NULL;
     model->faces = NULL;
     model->vertexCount = 0;
     model->faceCount = 0;
-    return 0;
+    return &model;
 }
 
 int loadModelFromFile(Model *model, const char *path)
@@ -101,13 +102,11 @@ int loadModelFromFile(Model *model, const char *path)
     return 0;
 }
 
-int freeModel(Model *model)
+void freeModel(Model *model)
 {
-    free(model->faces);
-    free(model->vertices);
-    model->faces = NULL;
-    model->vertices = NULL;
-    model->faceCount = 0;
-    model->vertexCount = 0;
-    return 0;
+    if (model)
+    {
+        free(model->faces);
+        free(model->vertices);
+    }
 }

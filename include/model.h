@@ -11,8 +11,8 @@ typedef struct
     size_t (*faces)[3];
 } Model;
 
-int initModel(Model *model);
+Model *initModel();
 int loadModelFromFile(Model *model, const char *path);
-int freeModel(Model *model);
+void freeModel(Model *model);
 
 #endif
