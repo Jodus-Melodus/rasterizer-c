@@ -11,14 +11,14 @@ ScreenBuffer *initScreenBuffer()
     ScreenBuffer *screen = malloc(sizeof(ScreenBuffer));
     if (!screen)
         return NULL;
-    screen->buffer = malloc(WIDTH * HEIGHT * sizeof(Color));
+    screen->buffer = malloc(BUFFER_SIZE * sizeof(Color));
     if (!screen->buffer)
     {
         free(screen);
         return NULL;
     }
 
-    memset(screen->buffer, 0, WIDTH * HEIGHT * sizeof(Color));
+    memset(screen->buffer, 0, BUFFER_SIZE * sizeof(Color));
     return screen;
 }
 
@@ -59,6 +59,7 @@ int set(ScreenBuffer *screen, int x, int y, Color color)
         return 1;
 
     screen->buffer[index] = color;
+    return 0;
 }
 
 char *displayScreenBuffer(const ScreenBuffer *screen)
@@ -107,6 +108,9 @@ char *displayScreenBuffer(const ScreenBuffer *screen)
 
 int drawTriangle(ScreenBuffer *screen, Vector2 *a, Vector2 *b, Vector2 *c, Color color)
 {
+    if (!screen)
+        return 1;
+
     int maxX = (int)ceilf(max(a->x, max(b->x, c->x)));
     int minX = (int)floorf(min(a->x, min(b->x, c->x)));
     int maxY = (int)ceilf(max(a->y, max(b->y, c->y)));
@@ -122,6 +126,8 @@ int drawTriangle(ScreenBuffer *screen, Vector2 *a, Vector2 *b, Vector2 *c, Color
                 set(screen, x, y, color);
         }
     }
+
+    return 0;
 }
 
 int calculateBarycentricCoordinates(Vector2 *a, Vector2 *b, Vector2 *c, Vector2 *p)
@@ -144,17 +150,20 @@ Vector2 projectCoordinate(const Vector3 *p, const float focalLength)
     return projected;
 }
 
-int clearScreenBuffer(ScreenBuffer *sb)
+int clearScreenBuffer(ScreenBuffer *screen)
 {
-    if (sb == NULL || sb->buffer == NULL)
+    if (!screen || !screen->buffer)
         return 1;
 
-    memset(sb->buffer, 0, BUFFER_SIZE * sizeof(Color));
+    memset(screen->buffer, 0, BUFFER_SIZE * sizeof(Color));
     return 0;
 }
 
-void drawModel(ScreenBuffer *sb, const Model *model, const float focalLength)
+int drawModel(ScreenBuffer *screen, const Model *model, const float focalLength)
 {
+    if (!screen || !model)
+        return 1;
+
     for (size_t i = 0; i < model->faceCount; i++)
     {
         size_t faceIndex1 = model->faces[i][0];
@@ -162,17 +171,14 @@ void drawModel(ScreenBuffer *sb, const Model *model, const float focalLength)
         size_t faceIndex3 = model->faces[i][2];
 
         Vector3 *vertices = model->vertices;
-        Vector2 vertex1, vertex2, vertex3;
-        vertex1 = projectCoordinate(&vertices[faceIndex1], focalLength);
-        vertex2 = projectCoordinate(&vertices[faceIndex2], focalLength);
-        vertex3 = projectCoordinate(&vertices[faceIndex3], focalLength);
-        Color color;
-        color.r = randColor();
-        color.g = randColor();
-        color.b = randColor();
+        Vector2 vertex1 = projectCoordinate(&vertices[faceIndex1], focalLength);
+        Vector2 vertex2 = projectCoordinate(&vertices[faceIndex2], focalLength);
+        Vector2 vertex3 = projectCoordinate(&vertices[faceIndex3], focalLength);
+        Color color = {randColor(), randColor(), randColor()};
 
-        drawTriangle(sb, &vertex1, &vertex2, &vertex3, color);
+        drawTriangle(screen, &vertex1, &vertex2, &vertex3, color);
     }
+    return 0;
 }
 
 void freeScreenBuffer(ScreenBuffer *screen)
