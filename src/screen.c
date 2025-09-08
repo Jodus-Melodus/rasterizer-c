@@ -6,21 +6,20 @@
 #include "screen.h"
 #include "utils.h"
 
-void initScreenBuffer(ScreenBuffer *sb)
+ScreenBuffer *initScreenBuffer()
 {
-    if (sb == NULL)
-        return;
-    sb->buffer = malloc(BUFFER_SIZE * sizeof(Color));
-    if (sb->buffer)
-        memset(sb->buffer, 0, BUFFER_SIZE * sizeof(Color));
-}
+    ScreenBuffer *screen = malloc(sizeof(ScreenBuffer));
+    if (!screen)
+        return NULL;
+    screen->buffer = malloc(WIDTH * HEIGHT * sizeof(Color));
+    if (!screen->buffer)
+    {
+        free(screen);
+        return NULL;
+    }
 
-void freeScreenBuffer(ScreenBuffer *sb)
-{
-    if (sb == NULL)
-        return;
-    free(sb->buffer);
-    sb->buffer = NULL;
+    memset(screen->buffer, 0, WIDTH * HEIGHT * sizeof(Color));
+    return screen;
 }
 
 int getIndex(int x, int y)
@@ -148,5 +147,14 @@ void drawModel(ScreenBuffer *sb, const Model *model, const float focalLength)
         color.b = randColor();
 
         drawTriangle(sb, &vertex1, &vertex2, &vertex3, color);
+    }
+}
+
+void freeScreenBuffer(ScreenBuffer *screen)
+{
+    if (screen)
+    {
+        free(screen->buffer);
+        free(screen);
     }
 }
