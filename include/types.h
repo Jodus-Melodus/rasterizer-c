@@ -8,7 +8,8 @@ typedef struct
     unsigned char r, g, b;
 } Color;
 
-char asChar(Color color);
-char *display(Color color);
+Color initColor(unsigned char r, unsigned char g, unsigned char b);
+char asChar(const Color color);
+char *displayColor(Color color);
 
 #endif

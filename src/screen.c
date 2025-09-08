@@ -78,7 +78,7 @@ char *displayScreenBuffer(const ScreenBuffer *screen)
         for (int x = -X_OFFSET; x < WIDTH - X_OFFSET; x++)
         {
             Color color = get(screen, x, y);
-            char *character = display(color);
+            char *character = displayColor(color);
             size_t oldLength = strlen(output);
             size_t addLength = strlen(character);
             char *temporary = realloc(output, oldLength + addLength + 1);
