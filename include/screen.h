@@ -21,8 +21,8 @@ ScreenBuffer *initScreenBuffer();
 int getIndex(int x, int y);
 const Color get(const ScreenBuffer *screen, int x, int y);
 int set(ScreenBuffer *screen, int x, int y, Color color);
-
 char *displayScreenBuffer(const ScreenBuffer *screen);
+
 void drawTriangle(ScreenBuffer *screen, Vector2 *a, Vector2 *b, Vector2 *c, Color color);
 int calculateBarycentricCoordinates(Vector2 *p, Vector2 *a, Vector2 *b, Vector2 *c);
 Vector2 projectCoordinate(const Vector3 *p, const float focalLength);

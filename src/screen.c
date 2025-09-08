@@ -61,29 +61,48 @@ int set(ScreenBuffer *screen, int x, int y, Color color)
     screen->buffer[index] = color;
 }
 
-char *displayScreenBuffer(const ScreenBuffer *sb)
+char *displayScreenBuffer(const ScreenBuffer *screen)
 {
-    if (sb == NULL)
-        return 0;
-
-    char *result = malloc(BUFFER_SIZE + HEIGHT + 1);
-    if (!result)
+    // pre compute the size
+    if (!screen)
         return NULL;
 
-    size_t pos = 0;
+    char *output = malloc(1);
+    if (!output)
+        return NULL;
+    output[0] = '\0';
 
     for (int y = -Y_OFFSET; y < HEIGHT - Y_OFFSET; y++)
     {
         for (int x = -X_OFFSET; x < WIDTH - X_OFFSET; x++)
         {
-            unsigned char gray = toGray(get(sb, x, y));
-            int gradientIndex = gray * (sizeof(GRADIENT) - 1) / 255;
-            result[pos++] = GRADIENT[gradientIndex];
+            Color color = get(screen, x, y);
+            char *character = display(color);
+            size_t oldLength = strlen(output);
+            size_t addLength = strlen(character);
+            char *temporary = realloc(output, oldLength + addLength + 1);
+            if (!temporary)
+            {
+                free(output);
+                return NULL;
+            }
+            output = temporary;
+            memcpy(output + oldLength, character, addLength + 1);
         }
-        result[pos++] = '\n';
+
+        size_t oldLength = strlen(output);
+        char *temporary = realloc(output, oldLength + 2);
+        if (!temporary)
+        {
+            free(output);
+            return NULL;
+        }
+        output = temporary;
+        output[oldLength] = '\n';
+        output[oldLength + 1] = '\0';
     }
-    result[pos] = '\0';
-    return result;
+
+    return output;
 }
 
 void drawTriangle(ScreenBuffer *sb, Vector2 *a, Vector2 *b, Vector2 *c, Color color)
