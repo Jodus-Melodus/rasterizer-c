@@ -16,20 +16,20 @@ Model *initModel()
 int loadModelFromFile(Model *model, const char *path)
 {
     FILE *file = fopen(path, "r");
-    if (file == NULL)
+    if (!file)
     {
         perror("Failed to open file");
-        return -1;
+        return 1;
     }
 
     char lineBuffer[256];
     while (fgets(lineBuffer, sizeof(lineBuffer), file))
     {
         char lineType[2];
-        float x, y, z;
 
         if (lineBuffer[0] == 'v' && lineBuffer[1] == ' ')
         {
+            float x, y, z;
             if (sscanf(lineBuffer, "v %f %f %f", &x, &y, &z) != 3)
             {
                 fprintf(stderr, "Invalid vertext line: %s\n", lineBuffer);
@@ -41,7 +41,7 @@ int loadModelFromFile(Model *model, const char *path)
             {
                 free(model->vertices);
                 fclose(file);
-                return -1;
+                return 1;
             }
             model->vertices = newVertexPointer;
             model->vertices[model->vertexCount] = vec;
@@ -66,7 +66,7 @@ int loadModelFromFile(Model *model, const char *path)
                     {
                         free(faceIndices);
                         fclose(file);
-                        return -1;
+                        return 1;
                     }
                     faceIndices = temporary;
                     faceIndices[faceIndicesCount++] = index;
@@ -83,11 +83,10 @@ int loadModelFromFile(Model *model, const char *path)
                     free(faceIndices);
                     free(model->faces);
                     fclose(file);
-                    return -1;
+                    return 1;
                 }
 
                 model->faces = newFacePointer;
-
                 model->faces[model->faceCount][0] = faceIndices[0];
                 model->faces[model->faceCount][1] = faceIndices[i];
                 model->faces[model->faceCount][2] = faceIndices[i + 1];
