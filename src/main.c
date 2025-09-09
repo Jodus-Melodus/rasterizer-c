@@ -41,14 +41,14 @@ int main()
 
     ScreenBuffer *screen = initScreenBuffer();
     Model *model = initModel();
-    loadModelFromFile(model, "../../objects/axis.obj");
-    const float focalLength = 50.0;
+    loadModelFromFile(model, "../../objects/nissan.obj");
+    const float focalLength = 100.0;
 
     int running = 1;
     while (running)
     {
         now = clock();
-        deltaTime = (float)(now - lastFrame) / CLOCKS_PER_SEC / 60;
+        deltaTime = (float)(now - lastFrame) / CLOCKS_PER_SEC / 120;
 
         if (_kbhit())
         {

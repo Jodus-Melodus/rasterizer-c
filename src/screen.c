@@ -206,7 +206,7 @@ Vector3 projectCoordinate(const Vector3 *p, const float focalLength)
         denominator = 0.00001;
     Vector3 projected = {
         (focalLength * p->x) / denominator,
-        (focalLength * p->y) / denominator,
+        -(focalLength * p->y) / denominator,
         p->z};
     return projected;
 }
@@ -217,7 +217,7 @@ int clearScreenBuffer(ScreenBuffer *screen)
         return 1;
 
     memset(screen->buffer, 0, BUFFER_SIZE * sizeof(Color));
-    memset(screen->depthBuffer, 0, BUFFER_SIZE * sizeof(float));
+    memset(screen->depthBuffer, INFINITY, BUFFER_SIZE * sizeof(float));
     return 0;
 }
 
@@ -264,19 +264,23 @@ int rotateModel(Model *model, const Axis rotationAxis, const float theta)
     for (size_t i = 0; i < model->vertexCount; i++)
     {
         Vector3 *vertex = &model->vertices[i];
+        const float x = vertex->x;
+        const float y = vertex->y;
+        const float z = vertex->z;
+
         switch (rotationAxis)
         {
         case X:
-            vertex->y = vertex->y * cosTheta - vertex->z * sinTheta;
-            vertex->z = vertex->y * sinTheta + vertex->z * cosTheta;
+            vertex->y = y * cosTheta - z * sinTheta;
+            vertex->z = y * sinTheta + z * cosTheta;
             break;
         case Y:
-            vertex->x = vertex->x * cosTheta + vertex->z * sinTheta;
-            vertex->z = -vertex->x * sinTheta + vertex->z * cosTheta;
+            vertex->x = x * cosTheta + z * sinTheta;
+            vertex->z = -x * sinTheta + z * cosTheta;
             break;
         case Z:
-            vertex->x = vertex->x * cosTheta - vertex->y * sinTheta;
-            vertex->y = vertex->x * sinTheta + vertex->y * cosTheta;
+            vertex->x = x * cosTheta - y * sinTheta;
+            vertex->y = x * sinTheta + y * cosTheta;
             break;
 
         default:
