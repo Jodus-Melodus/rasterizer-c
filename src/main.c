@@ -34,14 +34,22 @@ int main()
     SetConsoleSize();
     EnableANSI();
 
+    clock_t lastFrame, now;
+    float deltaTime;
+    lastFrame = clock();
+    float rotationSpeed = 1.0;
+
     ScreenBuffer *screen = initScreenBuffer();
     Model *model = initModel();
-    loadModelFromFile(model, "../../objects/cone.obj");
+    loadModelFromFile(model, "../../objects/axis.obj");
     const float focalLength = 50.0;
 
     int running = 1;
     while (running)
     {
+        now = clock();
+        deltaTime = (float)(now - lastFrame) / CLOCKS_PER_SEC / 60;
+
         if (_kbhit())
         {
             int ch = _getch();
@@ -49,6 +57,7 @@ int main()
                 running = 0;
         }
 
+        rotateModel(model, X, deltaTime * rotationSpeed);
         clearScreenBuffer(screen);
         drawModel(screen, model, focalLength);
         system("cls");

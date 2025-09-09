@@ -189,3 +189,37 @@ void freeScreenBuffer(ScreenBuffer *screen)
         free(screen);
     }
 }
+
+int rotateModel(Model *model, const Axis rotationAxis, const float theta)
+{
+    if (!model)
+        return 1;
+
+    const float sinTheta = sinf(theta);
+    const float cosTheta = cosf(theta);
+
+    for (size_t i = 0; i < model->vertexCount; i++)
+    {
+        Vector3 *vertex = &model->vertices[i];
+        switch (rotationAxis)
+        {
+        case X:
+            vertex->y = vertex->y * cosTheta - vertex->z * sinTheta;
+            vertex->z = vertex->y * sinTheta + vertex->z * cosTheta;
+            break;
+        case Y:
+            vertex->x = vertex->x * cosTheta + vertex->z * sinTheta;
+            vertex->z = -vertex->x * sinTheta + vertex->z * cosTheta;
+            break;
+        case Z:
+            vertex->x = vertex->x * cosTheta - vertex->y * sinTheta;
+            vertex->y = vertex->x * sinTheta + vertex->y * cosTheta;
+            break;
+
+        default:
+            return 1;
+        }
+    }
+
+    return 0;
+}

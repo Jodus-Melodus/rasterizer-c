@@ -12,4 +12,11 @@ Color initColor(unsigned char r, unsigned char g, unsigned char b);
 char asChar(const Color color);
 char *displayColor(Color color);
 
+typedef enum
+{
+    X,
+    Y,
+    Z
+} Axis;
+
 #endif

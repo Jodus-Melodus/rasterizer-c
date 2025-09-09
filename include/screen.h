@@ -28,5 +28,6 @@ Vector2 projectCoordinate(const Vector3 *p, const float focalLength);
 int clearScreenBuffer(ScreenBuffer *screen);
 int drawModel(ScreenBuffer *screen, const Model *model, const float focalLength);
 void freeScreenBuffer(ScreenBuffer *screen);
+int rotateModel(Model *model, const Axis rotationAxis, const float theta);
 
 #endif
