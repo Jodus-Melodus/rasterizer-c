@@ -15,18 +15,23 @@
 typedef struct
 {
     Color *buffer;
+    float *depthBuffer;
 } ScreenBuffer;
 
 ScreenBuffer *initScreenBuffer();
 int getIndex(int x, int y);
 const Color get(const ScreenBuffer *screen, int x, int y);
+const float getDepthBuffer(const ScreenBuffer *screen, int x, int y);
 int set(ScreenBuffer *screen, int x, int y, Color color);
+int setDepthBuffer(ScreenBuffer *screen, int x, int y, float depth);
 char *displayScreenBuffer(const ScreenBuffer *screen);
-int drawTriangle(ScreenBuffer *screen, Vector2 *a, Vector2 *b, Vector2 *c, Color color);
-int calculateBarycentricCoordinates(Vector2 *a, Vector2 *b, Vector2 *c, Vector2 *p);
-Vector2 projectCoordinate(const Vector3 *p, const float focalLength);
+int drawTriangle(ScreenBuffer *screen, Vector3 *a, Vector3 *b, Vector3 *c, Color color);
+float *calculateBarycentricCoordinates(Vector2 *a, Vector2 *b, Vector2 *c, Vector2 *p);
+Vector3 projectCoordinate(const Vector3 *p, const float focalLength);
 int clearScreenBuffer(ScreenBuffer *screen);
 int drawModel(ScreenBuffer *screen, const Model *model, const float focalLength);
 void freeScreenBuffer(ScreenBuffer *screen);
+int rotateModel(Model *model, const Axis rotationAxis, const float theta);
+float normalizeDepth(const float z, const float near, const float far);
 
 #endif

@@ -12,13 +12,15 @@ ScreenBuffer *initScreenBuffer()
     if (!screen)
         return NULL;
     screen->buffer = malloc(BUFFER_SIZE * sizeof(Color));
-    if (!screen->buffer)
+    screen->depthBuffer = malloc(BUFFER_SIZE * sizeof(float));
+    if (!screen->buffer || !screen->depthBuffer)
     {
         free(screen);
         return NULL;
     }
-
     memset(screen->buffer, 0, BUFFER_SIZE * sizeof(Color));
+    memset(screen->depthBuffer, 0, BUFFER_SIZE * sizeof(float));
+
     return screen;
 }
 
@@ -49,6 +51,18 @@ const Color get(const ScreenBuffer *screen, int x, int y)
     return screen->buffer[index];
 }
 
+const float getDepthBuffer(const ScreenBuffer *screen, int x, int y)
+{
+    if (!screen)
+        return INFINITY;
+
+    int index = getIndex(x, y);
+    if (index == -1)
+        return INFINITY;
+
+    return screen->depthBuffer[index];
+}
+
 int set(ScreenBuffer *screen, int x, int y, Color color)
 {
     if (!screen)
@@ -59,6 +73,19 @@ int set(ScreenBuffer *screen, int x, int y, Color color)
         return 1;
 
     screen->buffer[index] = color;
+    return 0;
+}
+
+int setDepthBuffer(ScreenBuffer *screen, int x, int y, float depth)
+{
+    if (!screen)
+        return 1;
+
+    int index = getIndex(x, y);
+    if (index == -1)
+        return 1;
+
+    screen->depthBuffer[index] = depth;
     return 0;
 }
 
@@ -106,7 +133,7 @@ char *displayScreenBuffer(const ScreenBuffer *screen)
     return output;
 }
 
-int drawTriangle(ScreenBuffer *screen, Vector2 *a, Vector2 *b, Vector2 *c, Color color)
+int drawTriangle(ScreenBuffer *screen, Vector3 *a, Vector3 *b, Vector3 *c, Color color)
 {
     if (!screen)
         return 1;
@@ -115,47 +142,82 @@ int drawTriangle(ScreenBuffer *screen, Vector2 *a, Vector2 *b, Vector2 *c, Color
     int minX = (int)floorf(min(a->x, min(b->x, c->x)));
     int maxY = (int)ceilf(max(a->y, max(b->y, c->y)));
     int minY = (int)floorf(min(a->y, min(b->y, c->y)));
+    float near = 0.1;
+    float far = 100.0;
+
+    Vector2 a2 = {a->x, a->y};
+    Vector2 b2 = {b->x, b->y};
+    Vector2 c2 = {c->x, c->y};
 
     for (int y = minY; y < maxY; y++)
     {
         for (int x = minX; x < maxX; x++)
         {
             Vector2 p = {x, y};
+            float u, v, w;
+            float *weights = calculateBarycentricCoordinates(&a2, &b2, &c2, &p);
 
-            if (calculateBarycentricCoordinates(a, b, c, &p))
-                set(screen, x, y, color);
+            if (!weights)
+                continue;
+            u = weights[0];
+            v = weights[1];
+            w = weights[2];
+
+            if ((u >= 0.0) && (v >= 0.0) && (w >= 0.0))
+            {
+                float depth = normalizeDepth(u * a->z + v * b->z + w * c->z, near, far);
+
+                if (depth < getDepthBuffer(screen, x, y))
+                {
+                    set(screen, x, y, color);
+                    setDepthBuffer(screen, x, y, depth);
+                }
+            }
         }
     }
 
     return 0;
 }
 
-int calculateBarycentricCoordinates(Vector2 *a, Vector2 *b, Vector2 *c, Vector2 *p)
+float normalizeDepth(const float z, const float near, const float far)
+{
+    return (z - near) / (far - near);
+}
+
+float *calculateBarycentricCoordinates(Vector2 *a, Vector2 *b, Vector2 *c, Vector2 *p)
 {
     float denominator = (b->y - c->y) * (a->x - c->x) + (c->x - b->x) * (a->y - c->y);
     float u = ((b->y - c->y) * (p->x - c->x) + (c->x - b->x) * (p->y - c->y)) / denominator;
     float v = ((c->y - a->y) * (p->x - c->x) + (a->x - c->x) * (p->y - c->y)) / denominator;
     float w = 1.0 - u - v;
-    return (u >= 0.0) && (v >= 0.0) && (w >= 0.0);
+    float *weights = malloc(3 * sizeof(float));
+    if (!weights)
+        return NULL;
+    weights[0] = u;
+    weights[1] = v;
+    weights[2] = w;
+    return weights;
 }
 
-Vector2 projectCoordinate(const Vector3 *p, const float focalLength)
+Vector3 projectCoordinate(const Vector3 *p, const float focalLength)
 {
     float denominator = focalLength + p->z;
     if (denominator == 0.0)
         denominator = 0.00001;
-    Vector2 projected = {
+    Vector3 projected = {
         (focalLength * p->x) / denominator,
-        (focalLength * p->y) / denominator};
+        -(focalLength * p->y) / denominator,
+        p->z};
     return projected;
 }
 
 int clearScreenBuffer(ScreenBuffer *screen)
 {
-    if (!screen || !screen->buffer)
+    if (!screen || !screen->buffer || !screen->depthBuffer)
         return 1;
 
     memset(screen->buffer, 0, BUFFER_SIZE * sizeof(Color));
+    memset(screen->depthBuffer, INFINITY, BUFFER_SIZE * sizeof(float));
     return 0;
 }
 
@@ -171,9 +233,9 @@ int drawModel(ScreenBuffer *screen, const Model *model, const float focalLength)
         size_t faceIndex3 = model->faces[i][2];
 
         Vector3 *vertices = model->vertices;
-        Vector2 vertex1 = projectCoordinate(&vertices[faceIndex1], focalLength);
-        Vector2 vertex2 = projectCoordinate(&vertices[faceIndex2], focalLength);
-        Vector2 vertex3 = projectCoordinate(&vertices[faceIndex3], focalLength);
+        Vector3 vertex1 = projectCoordinate(&vertices[faceIndex1], focalLength);
+        Vector3 vertex2 = projectCoordinate(&vertices[faceIndex2], focalLength);
+        Vector3 vertex3 = projectCoordinate(&vertices[faceIndex3], focalLength);
         Color color = {randColor(), randColor(), randColor()};
 
         drawTriangle(screen, &vertex1, &vertex2, &vertex3, color);
@@ -186,6 +248,45 @@ void freeScreenBuffer(ScreenBuffer *screen)
     if (screen)
     {
         free(screen->buffer);
+        free(screen->depthBuffer);
         free(screen);
     }
+}
+
+int rotateModel(Model *model, const Axis rotationAxis, const float theta)
+{
+    if (!model)
+        return 1;
+
+    const float sinTheta = sinf(theta);
+    const float cosTheta = cosf(theta);
+
+    for (size_t i = 0; i < model->vertexCount; i++)
+    {
+        Vector3 *vertex = &model->vertices[i];
+        const float x = vertex->x;
+        const float y = vertex->y;
+        const float z = vertex->z;
+
+        switch (rotationAxis)
+        {
+        case X:
+            vertex->y = y * cosTheta - z * sinTheta;
+            vertex->z = y * sinTheta + z * cosTheta;
+            break;
+        case Y:
+            vertex->x = x * cosTheta + z * sinTheta;
+            vertex->z = -x * sinTheta + z * cosTheta;
+            break;
+        case Z:
+            vertex->x = x * cosTheta - y * sinTheta;
+            vertex->y = x * sinTheta + y * cosTheta;
+            break;
+
+        default:
+            return 1;
+        }
+    }
+
+    return 0;
 }
