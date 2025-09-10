@@ -8,9 +8,7 @@ typedef struct
     unsigned char r, g, b;
 } Color;
 
-Color initColor(unsigned char r, unsigned char g, unsigned char b);
 char asChar(const Color color);
-char *displayColor(Color color);
 
 typedef enum
 {
@@ -18,5 +16,15 @@ typedef enum
     Y,
     Z
 } Axis;
+
+typedef struct
+{
+    float x, y;
+} Vector2;
+
+typedef struct
+{
+    float x, y, z;
+} Vector3;
 
 #endif

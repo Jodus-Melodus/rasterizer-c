@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
+
 #include "screen.h"
 #include "utils.h"
 
@@ -37,10 +38,7 @@ int getIndex(int x, int y)
 
 const Color get(const ScreenBuffer *screen, int x, int y)
 {
-    Color color;
-    color.r = 0;
-    color.g = 0;
-    color.b = 0;
+    Color color = {0, 0, 0};
     if (!screen)
         return color;
 
@@ -91,45 +89,34 @@ int setDepthBuffer(ScreenBuffer *screen, int x, int y, float depth)
 
 char *displayScreenBuffer(const ScreenBuffer *screen)
 {
-    // pre compute the size
     if (!screen)
         return NULL;
-
-    char *output = malloc(1);
+    const size_t perPixel = 20;
+    const size_t total = (size_t)WIDTH * HEIGHT * perPixel + HEIGHT + 1;
+    char *output = malloc(total);
     if (!output)
         return NULL;
-    output[0] = '\0';
 
-    for (int y = -Y_OFFSET; y < HEIGHT - Y_OFFSET; y++)
+    size_t pos = 0;
+    for (int y = -Y_OFFSET; y < HEIGHT - Y_OFFSET; ++y)
     {
-        for (int x = -X_OFFSET; x < WIDTH - X_OFFSET; x++)
+        for (int x = -X_OFFSET; x < WIDTH - X_OFFSET; ++x)
         {
             Color color = get(screen, x, y);
-            char *character = displayColor(color);
-            size_t oldLength = strlen(output);
-            size_t addLength = strlen(character);
-            char *temporary = realloc(output, oldLength + addLength + 1);
-            if (!temporary)
+            char ch = asChar(color);
+            int n = snprintf(output + pos, total - pos,
+                             "\x1b[38;2;%u;%u;%um%c\x1b[0m",
+                             color.r, color.g, color.b, ch);
+            if (n < 0 || (size_t)n >= total - pos)
             {
                 free(output);
                 return NULL;
             }
-            output = temporary;
-            memcpy(output + oldLength, character, addLength + 1);
+            pos += (size_t)n;
         }
-
-        size_t oldLength = strlen(output);
-        char *temporary = realloc(output, oldLength + 2);
-        if (!temporary)
-        {
-            free(output);
-            return NULL;
-        }
-        output = temporary;
-        output[oldLength] = '\n';
-        output[oldLength + 1] = '\0';
+        output[pos++] = '\n';
     }
-
+    output[pos] = '\0';
     return output;
 }
 
@@ -149,19 +136,14 @@ int drawTriangle(ScreenBuffer *screen, Vector3 *a, Vector3 *b, Vector3 *c, Color
     Vector2 b2 = {b->x, b->y};
     Vector2 c2 = {c->x, c->y};
 
-    for (int y = minY; y < maxY; y++)
+    for (int y = minY; y <= maxY; ++y)
     {
-        for (int x = minX; x < maxX; x++)
+        for (int x = minX; x <= maxX; ++x)
         {
             Vector2 p = {x, y};
             float u, v, w;
-            float *weights = calculateBarycentricCoordinates(&a2, &b2, &c2, &p);
-
-            if (!weights)
+            if (!calculateBarycentricCoordinates(a2, b2, c2, p, &u, &v, &w))
                 continue;
-            u = weights[0];
-            v = weights[1];
-            w = weights[2];
 
             if ((u >= 0.0) && (v >= 0.0) && (w >= 0.0))
             {
@@ -184,26 +166,22 @@ float normalizeDepth(const float z, const float near, const float far)
     return (z - near) / (far - near);
 }
 
-float *calculateBarycentricCoordinates(Vector2 *a, Vector2 *b, Vector2 *c, Vector2 *p)
+inline int calculateBarycentricCoordinates(Vector2 a, Vector2 b, Vector2 c, Vector2 p, float *u, float *v, float *w)
 {
-    float denominator = (b->y - c->y) * (a->x - c->x) + (c->x - b->x) * (a->y - c->y);
-    float u = ((b->y - c->y) * (p->x - c->x) + (c->x - b->x) * (p->y - c->y)) / denominator;
-    float v = ((c->y - a->y) * (p->x - c->x) + (a->x - c->x) * (p->y - c->y)) / denominator;
-    float w = 1.0 - u - v;
-    float *weights = malloc(3 * sizeof(float));
-    if (!weights)
-        return NULL;
-    weights[0] = u;
-    weights[1] = v;
-    weights[2] = w;
-    return weights;
+    float denom = (b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y);
+    if (denom == 0.0f)
+        return 0;
+    *u = ((b.y - c.y) * (p.x - c.x) + (c.x - b.x) * (p.y - c.y)) / denom;
+    *v = ((c.y - a.y) * (p.x - c.x) + (a.x - c.x) * (p.y - c.y)) / denom;
+    *w = 1.0f - *u - *v;
+    return 1;
 }
 
 Vector3 projectCoordinate(const Vector3 *p, const float focalLength)
 {
     float denominator = focalLength + p->z;
-    if (denominator == 0.0)
-        denominator = 0.00001;
+    if (fabsf(denominator) < 1e-6f)
+        denominator = (denominator < 0 ? -1 : 1) * 1e-6f;
     Vector3 projected = {
         (focalLength * p->x) / denominator,
         -(focalLength * p->y) / denominator,
@@ -217,7 +195,10 @@ int clearScreenBuffer(ScreenBuffer *screen)
         return 1;
 
     memset(screen->buffer, 0, BUFFER_SIZE * sizeof(Color));
-    memset(screen->depthBuffer, INFINITY, BUFFER_SIZE * sizeof(float));
+
+    for (size_t i = 0; i < BUFFER_SIZE; ++i)
+        screen->depthBuffer[i] = INFINITY;
+
     return 0;
 }
 
@@ -236,7 +217,7 @@ int drawModel(ScreenBuffer *screen, const Model *model, const float focalLength)
         Vector3 vertex1 = projectCoordinate(&vertices[faceIndex1], focalLength);
         Vector3 vertex2 = projectCoordinate(&vertices[faceIndex2], focalLength);
         Vector3 vertex3 = projectCoordinate(&vertices[faceIndex3], focalLength);
-        Color color = {randColor(), randColor(), randColor()};
+        Color color = {255, 255, 255};
 
         drawTriangle(screen, &vertex1, &vertex2, &vertex3, color);
     }

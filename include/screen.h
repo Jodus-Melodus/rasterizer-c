@@ -2,8 +2,8 @@
 #define SCREEN_H
 
 #include <stddef.h>
+
 #include "types.h"
-#include "vector.h"
 #include "model.h"
 
 #define WIDTH 208
@@ -26,7 +26,7 @@ int set(ScreenBuffer *screen, int x, int y, Color color);
 int setDepthBuffer(ScreenBuffer *screen, int x, int y, float depth);
 char *displayScreenBuffer(const ScreenBuffer *screen);
 int drawTriangle(ScreenBuffer *screen, Vector3 *a, Vector3 *b, Vector3 *c, Color color);
-float *calculateBarycentricCoordinates(Vector2 *a, Vector2 *b, Vector2 *c, Vector2 *p);
+static inline int calculateBarycentricCoordinates(Vector2 a, Vector2 b, Vector2 c, Vector2 p, float *u, float *v, float *w);
 Vector3 projectCoordinate(const Vector3 *p, const float focalLength);
 int clearScreenBuffer(ScreenBuffer *screen);
 int drawModel(ScreenBuffer *screen, const Model *model, const float focalLength);

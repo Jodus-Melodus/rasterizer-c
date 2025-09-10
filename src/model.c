@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
 #include "model.h"
 
 Model *initModel()
@@ -18,7 +19,7 @@ int loadModelFromFile(Model *model, const char *path)
     FILE *file = fopen(path, "r");
     if (!file)
     {
-        perror("Failed to open file");
+        fprintf(stderr, "Failed to open file: %s\n", path);
         return 1;
     }
 

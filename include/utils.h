@@ -1,6 +1,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-unsigned char randColor();
+float clamp(const float value, const float min, const float max);
 
 #endif

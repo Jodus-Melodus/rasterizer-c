@@ -1,7 +1,7 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include "vector.h"
+#include "types.h"
 
 typedef struct
 {
