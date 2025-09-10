@@ -39,7 +39,7 @@ int main()
 
     ScreenBuffer *screen = initScreenBuffer();
     Model *model = initModel();
-    loadModelFromFile(model, "../../objects/cube.obj");
+    loadModelFromFile(model, "../../objects/cube.obj", "../../textures/test.png");
     const float focalLength = 100.0;
 
     int running = 1;

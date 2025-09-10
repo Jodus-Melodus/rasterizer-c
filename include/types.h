@@ -33,3 +33,5 @@ typedef struct
 } Vector3;
 
 #endif
+
+// TODO add error enum type

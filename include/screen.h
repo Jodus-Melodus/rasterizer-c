@@ -40,3 +40,5 @@ int rotateModel(Model *model, const Axis rotationAxis, const float theta);
 float normalizeDepth(const float z, const float near, const float far);
 
 #endif
+
+// TODO implement texture logic
