@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include <conio.h>
 #include <time.h>
+
 #include "screen.h"
 #include "model.h"
 
@@ -18,19 +19,16 @@ void EnableANSI()
 void SetConsoleSize()
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
     COORD bufferSize;
     bufferSize.X = WIDTH;
     bufferSize.Y = HEIGHT;
     SetConsoleScreenBufferSize(hConsole, bufferSize);
-
     SMALL_RECT windowSize = {0, 0, WIDTH - 1, HEIGHT - 1};
     SetConsoleWindowInfo(hConsole, TRUE, &windowSize);
 }
 
 int main()
 {
-    srand((unsigned int)time(NULL));
     SetConsoleSize();
     EnableANSI();
 
@@ -41,7 +39,7 @@ int main()
 
     ScreenBuffer *screen = initScreenBuffer();
     Model *model = initModel();
-    loadModelFromFile(model, "../../objects/nissan.obj");
+    loadModelFromFile(model, "../../objects/cube.obj", "../../textures/test.png");
     const float focalLength = 100.0;
 
     int running = 1;
@@ -57,7 +55,7 @@ int main()
                 running = 0;
         }
 
-        rotateModel(model, X, deltaTime * rotationSpeed);
+        rotateModel(model, Y, deltaTime * rotationSpeed);
         clearScreenBuffer(screen);
         drawModel(screen, model, focalLength);
         system("cls");
