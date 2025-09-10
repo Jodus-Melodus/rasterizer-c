@@ -1,14 +1,18 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
 #include "types.h"
 
 typedef struct
 {
-    size_t vertexCount;
     Vector3 *vertices;
+    size_t vertexCount;
+    size_t (*faces)[6];
     size_t faceCount;
-    size_t (*faces)[3];
 } Model;
 
 Model *initModel();
