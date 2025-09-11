@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "raylib.h"
-// #include <Windows.h>
 
 #include "screen.h"
 #include "model.h"
@@ -8,18 +7,13 @@
 
 int main()
 {
-    // HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
-    // DWORD events;
-    // INPUT_RECORD inputRecord;
-    // SetConsoleMode(hInput, ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT);
-
     const int width = 1280;
     const int height = 720;
-    const float focalLength = 100.0;
     const float mouseSensitivity = 3.0;
-    Point2D mousePosition = {0};
-    Point2D deltaMouse = {0};
-    float pitch, yaw;
+    float focalLength = 50.0f;
+    float pitch = 0.0f;
+    float yaw = 0.0f;
+    Vector2 lastMousePos = GetMousePosition();
 
     InitWindow(width, height, "Rasterizer-C");
     SetTargetFPS(60);
@@ -38,31 +32,26 @@ int main()
 
     while (!WindowShouldClose())
     {
-        // if (PeekConsoleInput(hInput, &inputRecord, 1, &events) && events > 0)
-        // {
-        //     ReadConsoleInput(hInput, &inputRecord, 1, &events);
-        //     if (inputRecord.EventType == MOUSE_EVENT)
-        //     {
-        //         MOUSE_EVENT_RECORD mouse = inputRecord.Event.MouseEvent;
-        //         Point2D newMousePos = {
-        //             mouse.dwMousePosition.X,
-        //             mouse.dwMousePosition.Y};
+        focalLength += GetMouseWheelMove() * 0.1f;
+        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+        {
+            Vector2 currentMousePos = GetMousePosition();
+            Vector2 delta = {
+                currentMousePos.x - lastMousePos.x,
+                currentMousePos.y - lastMousePos.y};
 
-        //         if (mouse.dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED)
-        //         {
-        //             deltaMouse.x = newMousePos.x - mousePosition.x;
-        //             deltaMouse.y = newMousePos.y - mousePosition.y;
+            pitch = delta.x / width * mouseSensitivity;
+            yaw = delta.y / height * mouseSensitivity;
 
-        //             pitch = deltaMouse.x / (float)width * mouseSensitivity;
-        //             yaw = deltaMouse.y / (float)height * mouseSensitivity;
+            rotateModel(model, Y, -pitch);
+            rotateModel(model, X, -yaw);
 
-        //             rotateModel(model, Y, -pitch);
-        //             rotateModel(model, X, -yaw);
-        //         }
-
-        //         mousePosition = newMousePos;
-        //     }
-        // }
+            lastMousePos = currentMousePos;
+        }
+        else
+        {
+            lastMousePos = GetMousePosition();
+        }
 
         clearScreenBuffer(screen);
         drawModel(screen, model, focalLength);
