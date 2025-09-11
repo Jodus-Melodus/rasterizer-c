@@ -176,6 +176,8 @@ int loadModelFromFile(Model *model, const char *modelPath, const char *texturePa
     }
 
     model->texture = texture;
+    model->textureWidth = width;
+    model->textureHeight = height;
     stbi_image_free(data);
     return 0;
 }

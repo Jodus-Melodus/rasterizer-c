@@ -114,7 +114,9 @@ char *displayScreenBuffer(const ScreenBuffer *screen)
     return output;
 }
 
-int drawTriangle(ScreenBuffer *screen, Vector3 *a, Vector3 *b, Vector3 *c, Color color)
+int drawTriangle(ScreenBuffer *screen, Vector3 *a, Vector3 *b, Vector3 *c,
+                 Vector2 textureCoordinate1, Vector2 textureCoordinate2, Vector2 textureCoordinate3,
+                 Color *texture, const size_t textureWidth, const size_t textureHeight)
 {
     if (!screen)
         return 1;
@@ -142,6 +144,12 @@ int drawTriangle(ScreenBuffer *screen, Vector3 *a, Vector3 *b, Vector3 *c, Color
             if ((u >= 0.0) && (v >= 0.0) && (w >= 0.0))
             {
                 float depth = normalizeDepth(u * a->z + v * b->z + w * c->z, near, far);
+                int textureCoordinateX, textureCoordinateY;
+                if (!interpolateTextureCoordinates(textureCoordinate1, textureCoordinate2,
+                                                   textureCoordinate3, u, v, w, &textureCoordinateX, &textureCoordinateY,
+                                                   textureWidth, textureHeight))
+                    continue;
+                Color color = texture[textureCoordinateY * textureWidth + textureCoordinateX];
 
                 if (depth < getDepthBuffer(screen, x, y))
                 {
@@ -160,7 +168,21 @@ float normalizeDepth(const float z, const float near, const float far)
     return (z - near) / (far - near);
 }
 
-inline int calculateBarycentricCoordinates(Vector2 a, Vector2 b, Vector2 c, Vector2 p, float *u, float *v, float *w)
+inline int interpolateTextureCoordinates(Vector2 textureCoordinate1, Vector2 textureCoordinate2,
+                                         Vector2 textureCoordinate3, float u, float v, float w, int *textureU, int *textureV,
+                                         const size_t textureWidth, const size_t textureHeight)
+{
+    float textureX = u * textureCoordinate1.x + v * textureCoordinate2.x + w * textureCoordinate3.x;
+    float textureY = u * textureCoordinate1.y + v * textureCoordinate2.y + w * textureCoordinate3.y;
+    float scaledX = textureX * ((float)textureWidth - 1.0f);
+    float scaledY = textureY * ((float)textureHeight - 1.0f);
+    *textureU = (int)clamp(roundf(scaledX), 0.0f, (float)(textureWidth - 1));
+    *textureV = (int)clamp(roundf(scaledY), 0.0f, (float)(textureHeight - 1));
+    return 1;
+}
+
+inline int calculateBarycentricCoordinates(Vector2 a, Vector2 b, Vector2 c,
+                                           Vector2 p, float *u, float *v, float *w)
 {
     float denom = (b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y);
     if (denom == 0.0f)
@@ -201,19 +223,33 @@ int drawModel(ScreenBuffer *screen, const Model *model, const float focalLength)
     if (!screen || !model)
         return 1;
 
+    Color sample = model->texture[(model->textureHeight / 2) * model->textureWidth + (model->textureWidth / 2)];
+    printf("Center pixel: R=%d G=%d B=%d\n", sample.r, sample.g, sample.b);
+
     for (size_t i = 0; i < model->faceCount; i++)
     {
         size_t faceIndex1 = model->faces[i][0];
         size_t faceIndex2 = model->faces[i][1];
         size_t faceIndex3 = model->faces[i][2];
+        size_t textureIndex1 = model->faces[i][3];
+        size_t textureIndex2 = model->faces[i][4];
+        size_t textureIndex3 = model->faces[i][5];
 
         Vector3 *vertices = model->vertices;
+        Vector2 *textureCoordinates = model->textureCoordinates;
+        Color *texture = model->texture;
+        const size_t textureWidth = model->textureWidth;
+        const size_t textureHeight = model->textureHeight;
         Vector3 vertex1 = projectCoordinate(&vertices[faceIndex1], focalLength);
         Vector3 vertex2 = projectCoordinate(&vertices[faceIndex2], focalLength);
         Vector3 vertex3 = projectCoordinate(&vertices[faceIndex3], focalLength);
-        Color color = {255, 255, 255};
+        Vector2 textureCoordinate1 = textureCoordinates[textureIndex1];
+        Vector2 textureCoordinate2 = textureCoordinates[textureIndex2];
+        Vector2 textureCoordinate3 = textureCoordinates[textureIndex3];
 
-        drawTriangle(screen, &vertex1, &vertex2, &vertex3, color);
+        drawTriangle(screen, &vertex1, &vertex2, &vertex3, textureCoordinate1,
+                     textureCoordinate2, textureCoordinate3, texture, textureWidth,
+                     textureHeight);
     }
     return 0;
 }

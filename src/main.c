@@ -58,11 +58,14 @@ int main()
         rotateModel(model, Y, deltaTime * rotationSpeed);
         clearScreenBuffer(screen);
         drawModel(screen, model, focalLength);
-        system("cls");
         char *display = displayScreenBuffer(screen);
+        printf("\x1b[2J\x1b[H");
         printf("%s", display);
         Sleep(100);
     }
 
     return 0;
 }
+
+// TODO metadata in separate window
+// TODO better error handeling
