@@ -11,20 +11,15 @@
 #include "types.h"
 #include "model.h"
 
-#define WIDTH 208
-#define HEIGHT 50
-#define BUFFER_SIZE (WIDTH * HEIGHT)
-#define X_OFFSET (WIDTH / 2)
-#define Y_OFFSET (HEIGHT / 2)
-
 typedef struct
 {
     Color *buffer;
+    int width, height;
     float *depthBuffer;
 } ScreenBuffer;
 
-ScreenBuffer *initScreenBuffer();
-int getIndex(int x, int y);
+ScreenBuffer *initScreenBuffer(const int width, const int height);
+int getIndex(int x, int y, const int width, const int height);
 const Color get(const ScreenBuffer *screen, int x, int y);
 const float getDepthBuffer(const ScreenBuffer *screen, int x, int y);
 int set(ScreenBuffer *screen, int x, int y, Color color);

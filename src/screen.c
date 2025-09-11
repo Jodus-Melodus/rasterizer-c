@@ -1,33 +1,35 @@
 #include "screen.h"
 #include "utils.h"
 
-ScreenBuffer *initScreenBuffer()
+ScreenBuffer *initScreenBuffer(const int width, const int height)
 {
     ScreenBuffer *screen = malloc(sizeof(ScreenBuffer));
     if (!screen)
         return NULL;
-    screen->buffer = malloc(BUFFER_SIZE * sizeof(Color));
-    screen->depthBuffer = malloc(BUFFER_SIZE * sizeof(float));
+    screen->buffer = malloc(width * height * sizeof(Color));
+    screen->depthBuffer = malloc(width * height * sizeof(float));
     if (!screen->buffer || !screen->depthBuffer)
     {
         free(screen);
         return NULL;
     }
-    memset(screen->buffer, 0, BUFFER_SIZE * sizeof(Color));
-    memset(screen->depthBuffer, 0, BUFFER_SIZE * sizeof(float));
+    memset(screen->buffer, 0, width * height * sizeof(Color));
+    memset(screen->depthBuffer, 0, width * height * sizeof(float));
+    screen->width = width;
+    screen->height = height;
 
     return screen;
 }
 
-int getIndex(int x, int y)
+int getIndex(int x, int y, const int width, const int height)
 {
-    int indexX = x + X_OFFSET;
-    int indexY = y + Y_OFFSET;
+    int indexX = x + (width / 2);
+    int indexY = y + (height / 2);
 
-    if (indexX < 0 || indexX >= WIDTH || indexY < 0 || indexY >= HEIGHT)
+    if (indexX < 0 || indexX >= width || indexY < 0 || indexY >= height)
         return -1;
 
-    return WIDTH * indexY + indexX;
+    return width * indexY + indexX;
 }
 
 const Color get(const ScreenBuffer *screen, int x, int y)
@@ -36,7 +38,7 @@ const Color get(const ScreenBuffer *screen, int x, int y)
     if (!screen)
         return color;
 
-    int index = getIndex(x, y);
+    int index = getIndex(x, y, screen->width, screen->height);
     if (index == -1)
         return color;
 
@@ -48,7 +50,7 @@ const float getDepthBuffer(const ScreenBuffer *screen, int x, int y)
     if (!screen)
         return INFINITY;
 
-    int index = getIndex(x, y);
+    int index = getIndex(x, y, screen->width, screen->height);
     if (index == -1)
         return INFINITY;
 
@@ -60,7 +62,7 @@ int set(ScreenBuffer *screen, int x, int y, Color color)
     if (!screen)
         return 1;
 
-    int index = getIndex(x, y);
+    int index = getIndex(x, y, screen->width, screen->height);
     if (index == -1)
         return 1;
 
@@ -73,7 +75,7 @@ int setDepthBuffer(ScreenBuffer *screen, int x, int y, float depth)
     if (!screen)
         return 1;
 
-    int index = getIndex(x, y);
+    int index = getIndex(x, y, screen->width, screen->height);
     if (index == -1)
         return 1;
 
@@ -86,15 +88,15 @@ char *displayScreenBuffer(const ScreenBuffer *screen)
     if (!screen)
         return NULL;
     const size_t perPixel = 20;
-    const size_t total = (size_t)WIDTH * HEIGHT * perPixel + HEIGHT + 1;
+    const size_t total = (size_t)(screen->width * screen->height * perPixel + screen->height + 1);
     char *output = malloc(total);
     if (!output)
         return NULL;
 
     size_t pos = 0;
-    for (int y = -Y_OFFSET; y < HEIGHT - Y_OFFSET; ++y)
+    for (int y = -(screen->height / 2); y < screen->height - (screen->height / 2); ++y)
     {
-        for (int x = -X_OFFSET; x < WIDTH - X_OFFSET; ++x)
+        for (int x = -(screen->width / 2); x < screen->width - (screen->width / 2); ++x)
         {
             Color color = get(screen, x, y);
             char ch = asChar(color);
@@ -210,9 +212,9 @@ int clearScreenBuffer(ScreenBuffer *screen)
     if (!screen || !screen->buffer || !screen->depthBuffer)
         return 1;
 
-    memset(screen->buffer, 0, BUFFER_SIZE * sizeof(Color));
+    memset(screen->buffer, 0, screen->height * screen->width * sizeof(Color));
 
-    for (size_t i = 0; i < BUFFER_SIZE; ++i)
+    for (size_t i = 0; i < screen->height * screen->width; ++i)
         screen->depthBuffer[i] = INFINITY;
 
     return 0;

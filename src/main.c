@@ -16,20 +16,8 @@ void EnableANSI()
     SetConsoleMode(hOut, dwMode);
 }
 
-void SetConsoleSize()
-{
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    COORD bufferSize;
-    bufferSize.X = WIDTH;
-    bufferSize.Y = HEIGHT;
-    SetConsoleScreenBufferSize(hConsole, bufferSize);
-    SMALL_RECT windowSize = {0, 0, WIDTH - 1, HEIGHT - 1};
-    SetConsoleWindowInfo(hConsole, TRUE, &windowSize);
-}
-
 int main()
 {
-    SetConsoleSize();
     EnableANSI();
 
     HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
@@ -42,7 +30,10 @@ int main()
     lastFrame = clock();
     float rotationSpeed = 1.0;
 
-    ScreenBuffer *screen = initScreenBuffer();
+    const int width = 208;
+    const int height = 50;
+
+    ScreenBuffer *screen = initScreenBuffer(width, height);
     Model *model = initModel();
     loadModelFromFile(model, "../../objects/cube.obj", "../../textures/test.png");
     const float focalLength = 100.0;
