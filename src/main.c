@@ -12,8 +12,8 @@ int main()
     INPUT_RECORD inputRecord;
     SetConsoleMode(hInput, ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT);
 
-    const int width = 208 * 4;
-    const int height = 50 * 4;
+    const int width = 208;
+    const int height = 50;
     const float focalLength = 100.0;
     const float mouseSensitivity = 3.0;
     int running = 1;
@@ -33,25 +33,23 @@ int main()
             if (inputRecord.EventType == MOUSE_EVENT)
             {
                 MOUSE_EVENT_RECORD mouse = inputRecord.Event.MouseEvent;
-                Vector2 newMousePosition = {
+                Vector2 newMousePos = {
                     mouse.dwMousePosition.X,
                     mouse.dwMousePosition.Y};
 
                 if (mouse.dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED)
                 {
-                    deltaMouse.x = newMousePosition.x - mousePosition.x;
-                    deltaMouse.y = newMousePosition.y - mousePosition.y;
+                    deltaMouse.x = newMousePos.x - mousePosition.x;
+                    deltaMouse.y = newMousePos.y - mousePosition.y;
+
+                    pitch = deltaMouse.x / (float)width * mouseSensitivity;
+                    yaw = deltaMouse.y / (float)height * mouseSensitivity;
+
+                    rotateModel(model, Y, -pitch);
+                    rotateModel(model, X, -yaw);
                 }
-                else
-                {
-                    deltaMouse.x = 0;
-                    deltaMouse.y = 0;
-                }
-                pitch = deltaMouse.x / (float)width * mouseSensitivity;
-                yaw = deltaMouse.y / (float)height * mouseSensitivity;
-                rotateModel(model, Y, -pitch);
-                rotateModel(model, X, -yaw);
-                mousePosition = newMousePosition;
+
+                mousePosition = newMousePos;
             }
         }
 
@@ -66,12 +64,11 @@ int main()
         drawModel(screen, model, focalLength);
         char *display = displayScreenBuffer(screen);
         printf("\x1b[H");
-        printf("%s", display);
-        Sleep(10);
+        fwrite(display, 1, strlen(display), stdout);
     }
 
     return 0;
 }
 
 // TODO metadata in separate window
-// TODO better error handeling
+// TODO better error handling
