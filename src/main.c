@@ -1,55 +1,53 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <Windows.h>
-#include <conio.h>
-#include <time.h>
 
 #include "screen.h"
 #include "model.h"
-
-void EnableANSI()
-{
-    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD dwMode = 0;
-    GetConsoleMode(hOut, &dwMode);
-    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-    SetConsoleMode(hOut, dwMode);
-}
+#include "types.h"
 
 int main()
 {
-    EnableANSI();
-
     HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
     DWORD events;
     INPUT_RECORD inputRecord;
     SetConsoleMode(hInput, ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT);
 
-    clock_t lastFrame, now;
-    float deltaTime;
-    lastFrame = clock();
-    float rotationSpeed = 1.0;
-
     const int width = 208;
     const int height = 50;
+    const float focalLength = 100.0;
+    const float mouseSensitivity = 3.0;
+    int running = 1;
+    Vector2 mousePosition = {0};
+    Vector2 deltaMouse = {0};
+    float pitch, yaw;
 
     ScreenBuffer *screen = initScreenBuffer(width, height);
     Model *model = initModel();
-    loadModelFromFile(model, "../../objects/cube.obj", "../../textures/test.png");
-    const float focalLength = 100.0;
+    loadModelFromFile(model, "../../objects/torus.obj", "../../textures/test.png");
 
-    int running = 1;
     while (running)
     {
-        now = clock();
-        deltaTime = (float)(now - lastFrame) / CLOCKS_PER_SEC / 120;
-
         if (PeekConsoleInput(hInput, &inputRecord, 1, &events) && events > 0)
         {
             ReadConsoleInput(hInput, &inputRecord, 1, &events);
             if (inputRecord.EventType == MOUSE_EVENT)
             {
                 MOUSE_EVENT_RECORD mouse = inputRecord.Event.MouseEvent;
+                Vector2 newMousePosition = {
+                    mouse.dwMousePosition.X,
+                    mouse.dwMousePosition.Y};
+
+                if (mouse.dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED)
+                {
+                    deltaMouse.x = newMousePosition.x - mousePosition.x;
+                    deltaMouse.y = newMousePosition.y - mousePosition.y;
+                }
+                else
+                {
+                    deltaMouse.x = 0;
+                    deltaMouse.y = 0;
+                }
+                mousePosition = newMousePosition;
             }
         }
 
@@ -60,13 +58,17 @@ int main()
                 running = 0;
         }
 
-        rotateModel(model, Y, deltaTime * rotationSpeed);
+        pitch = deltaMouse.x / (float)width * mouseSensitivity;
+        yaw = deltaMouse.y / (float)height * mouseSensitivity;
+        rotateModel(model, Y, -pitch);
+        rotateModel(model, X, -yaw);
+
         clearScreenBuffer(screen);
         drawModel(screen, model, focalLength);
         char *display = displayScreenBuffer(screen);
-        printf("\x1b[2J\x1b[H");
+        printf("\x1b[H");
         printf("%s", display);
-        Sleep(100);
+        Sleep(10);
     }
 
     return 0;

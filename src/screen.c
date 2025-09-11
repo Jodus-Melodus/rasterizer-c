@@ -222,11 +222,9 @@ int clearScreenBuffer(ScreenBuffer *screen)
 
 int drawModel(ScreenBuffer *screen, const Model *model, const float focalLength)
 {
+    // FIXME dont map textures when there isn't a texture
     if (!screen || !model)
         return 1;
-
-    Color sample = model->texture[(model->textureHeight / 2) * model->textureWidth + (model->textureWidth / 2)];
-    printf("Center pixel: R=%d G=%d B=%d\n", sample.r, sample.g, sample.b);
 
     for (size_t i = 0; i < model->faceCount; i++)
     {
