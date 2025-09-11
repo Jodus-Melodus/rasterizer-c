@@ -11,9 +11,9 @@ static const char GRADIENT[10] = {' ', '.', ':', '-', '=', '+', '*', '#', '%', '
 typedef struct
 {
     unsigned char r, g, b, a;
-} Color;
+} PixelColor;
 
-char asChar(const Color color);
+char asChar(const PixelColor color);
 
 typedef enum
 {
@@ -25,12 +25,12 @@ typedef enum
 typedef struct
 {
     float x, y;
-} Vector2;
+} Point2D;
 
 typedef struct
 {
     float x, y, z;
-} Vector3;
+} Point3D;
 
 #endif
 

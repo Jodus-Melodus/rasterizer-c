@@ -1,8 +1,8 @@
 #include "model.h"
 
-Model *initModel()
+Model3D *initModel()
 {
-    Model *model = malloc(sizeof(Model));
+    Model3D *model = malloc(sizeof(Model3D));
     model->vertices = NULL;
     model->faces = NULL;
     model->textureCoordinates = NULL;
@@ -16,7 +16,7 @@ Model *initModel()
     return model;
 }
 
-int loadModelFromFile(Model *model, const char *modelPath, const char *texturePath)
+int loadModelFromFile(Model3D *model, const char *modelPath, const char *texturePath)
 {
     FILE *file = fopen(modelPath, "r");
     if (!file)
@@ -36,8 +36,8 @@ int loadModelFromFile(Model *model, const char *modelPath, const char *texturePa
                 fprintf(stderr, "Invalid vertex line: %s\n", lineBuffer);
                 continue;
             }
-            Vector3 vec = {x, y, z};
-            Vector3 *newVertexPointer = realloc(model->vertices, (model->vertexCount + 1) * sizeof(Vector3));
+            Point3D vec = {x, y, z};
+            Point3D *newVertexPointer = realloc(model->vertices, (model->vertexCount + 1) * sizeof(Point3D));
             if (newVertexPointer == NULL)
             {
                 free(model->vertices);
@@ -56,9 +56,9 @@ int loadModelFromFile(Model *model, const char *modelPath, const char *texturePa
                 fprintf(stderr, "Invalid texture coordinate line: %s\n", lineBuffer);
                 continue;
             }
-            Vector2 uv = {u, v};
+            Point2D uv = {u, v};
             uv.y = 1.0f - uv.y;
-            Vector2 *newTexturePointer = realloc(model->textureCoordinates, (model->textureCoordinateCount + 1) * sizeof(Vector2));
+            Point2D *newTexturePointer = realloc(model->textureCoordinates, (model->textureCoordinateCount + 1) * sizeof(Point2D));
             if (newTexturePointer == NULL)
             {
                 free(model->textureCoordinates);
@@ -163,7 +163,7 @@ int loadModelFromFile(Model *model, const char *modelPath, const char *texturePa
         return 1;
     }
 
-    Color *texture = malloc(height * width * sizeof(Color));
+    PixelColor *texture = malloc(height * width * sizeof(PixelColor));
     if (texture == NULL)
     {
         stbi_image_free(data);
@@ -179,7 +179,7 @@ int loadModelFromFile(Model *model, const char *modelPath, const char *texturePa
             unsigned char g = (channels > 1) ? data[index + 1] : 0;
             unsigned char b = (channels > 2) ? data[index + 2] : 0;
             unsigned char a = (channels > 3) ? data[index + 3] : 255;
-            Color color = {r, g, b, a};
+            PixelColor color = {r, g, b, a};
 
             texture[y * width + x] = color;
         }
@@ -192,7 +192,7 @@ int loadModelFromFile(Model *model, const char *modelPath, const char *texturePa
     return 0;
 }
 
-void freeModel(Model *model)
+void freeModel(Model3D *model)
 {
     if (model)
     {

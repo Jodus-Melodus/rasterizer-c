@@ -1,6 +1,6 @@
 #include "types.h"
 
-char asChar(Color color)
+char asChar(PixelColor color)
 {
     float gray = (0.299f * color.r + 0.587f * color.g + 0.114f * color.b) / 255.0f;
     if (gray < 0.0f)

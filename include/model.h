@@ -10,19 +10,19 @@
 
 typedef struct
 {
-    Vector3 *vertices;
+    Point3D *vertices;
     size_t vertexCount;
     size_t (*faces)[6];
     size_t faceCount;
-    Color *texture;
+    PixelColor *texture;
     size_t textureWidth;
     size_t textureHeight;
-    Vector2 *textureCoordinates;
+    Point2D *textureCoordinates;
     size_t textureCoordinateCount;
-} Model;
+} Model3D;
 
-Model *initModel();
-int loadModelFromFile(Model *model, const char *modelPath, const char *texturePath);
-void freeModel(Model *model);
+Model3D *initModel();
+int loadModelFromFile(Model3D *model, const char *modelPath, const char *texturePath);
+void freeModel(Model3D *model);
 
 #endif
