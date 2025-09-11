@@ -57,6 +57,7 @@ int loadModelFromFile(Model *model, const char *modelPath, const char *texturePa
                 continue;
             }
             Vector2 uv = {u, v};
+            uv.y = 1.0f - uv.y;
             Vector2 *newTexturePointer = realloc(model->textureCoordinates, (model->textureCoordinateCount + 1) * sizeof(Vector2));
             if (newTexturePointer == NULL)
             {
@@ -117,6 +118,15 @@ int loadModelFromFile(Model *model, const char *modelPath, const char *texturePa
                 return 1;
             }
 
+            if (faceIndexCount < 3)
+            {
+                free(faceIndices);
+                free(textureIndices);
+                fclose(file);
+                fprintf(stderr, "Face has fewer than 3 vertices: %s\n", lineBuffer);
+                return 1;
+            }
+
             for (size_t i = 1; i < faceIndexCount - 1; i++)
             {
                 size_t (*newFacePointer)[6] =
@@ -149,7 +159,7 @@ int loadModelFromFile(Model *model, const char *modelPath, const char *texturePa
     unsigned char *data = stbi_load(texturePath, &width, &height, &channels, 0);
     if (data == NULL)
     {
-        fprintf(stderr, "Failed to open texture file");
+        fprintf(stderr, "Failed to open texture file\n");
         return 1;
     }
 

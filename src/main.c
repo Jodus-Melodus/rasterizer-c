@@ -12,8 +12,8 @@ int main()
     INPUT_RECORD inputRecord;
     SetConsoleMode(hInput, ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT);
 
-    const int width = 208;
-    const int height = 50;
+    const int width = 208 * 4;
+    const int height = 50 * 4;
     const float focalLength = 100.0;
     const float mouseSensitivity = 3.0;
     int running = 1;
@@ -23,7 +23,7 @@ int main()
 
     ScreenBuffer *screen = initScreenBuffer(width, height);
     Model *model = initModel();
-    loadModelFromFile(model, "../../objects/torus.obj", "../../textures/test.png");
+    loadModelFromFile(model, "../../objects/car.obj", "../../textures/car.png");
 
     while (running)
     {
@@ -47,6 +47,10 @@ int main()
                     deltaMouse.x = 0;
                     deltaMouse.y = 0;
                 }
+                pitch = deltaMouse.x / (float)width * mouseSensitivity;
+                yaw = deltaMouse.y / (float)height * mouseSensitivity;
+                rotateModel(model, Y, -pitch);
+                rotateModel(model, X, -yaw);
                 mousePosition = newMousePosition;
             }
         }
@@ -57,11 +61,6 @@ int main()
             if (ch == 27)
                 running = 0;
         }
-
-        pitch = deltaMouse.x / (float)width * mouseSensitivity;
-        yaw = deltaMouse.y / (float)height * mouseSensitivity;
-        rotateModel(model, Y, -pitch);
-        rotateModel(model, X, -yaw);
 
         clearScreenBuffer(screen);
         drawModel(screen, model, focalLength);
