@@ -32,6 +32,11 @@ int main()
     SetConsoleSize();
     EnableANSI();
 
+    HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD events;
+    INPUT_RECORD inputRecord;
+    SetConsoleMode(hInput, ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT);
+
     clock_t lastFrame, now;
     float deltaTime;
     lastFrame = clock();
@@ -47,6 +52,15 @@ int main()
     {
         now = clock();
         deltaTime = (float)(now - lastFrame) / CLOCKS_PER_SEC / 120;
+
+        if (PeekConsoleInput(hInput, &inputRecord, 1, &events) && events > 0)
+        {
+            ReadConsoleInput(hInput, &inputRecord, 1, &events);
+            if (inputRecord.EventType == MOUSE_EVENT)
+            {
+                MOUSE_EVENT_RECORD mouse = inputRecord.Event.MouseEvent;
+            }
+        }
 
         if (_kbhit())
         {
