@@ -12,6 +12,7 @@ int main()
     const float mouseSensitivity = 3.0;
     float pitch = 0.0f;
     float yaw = 0.0f;
+    float scale = 1.0f;
     Vector2 lastMousePos = GetMousePosition();
 
     InitWindow(width, height, "Rasterizer-C");
@@ -31,6 +32,7 @@ int main()
 
     while (!WindowShouldClose())
     {
+        scale += GetMouseWheelMove() / 10.0f;
         if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
         {
             Vector2 currentMousePos = GetMousePosition();
@@ -52,7 +54,7 @@ int main()
         }
 
         clearScreenBuffer(screen);
-        drawModel(screen, model);
+        drawModel(screen, model, scale);
 
         UpdateTexture(texture, screen->buffer);
 

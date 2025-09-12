@@ -175,7 +175,7 @@ int clearScreenBuffer(ScreenBuffer *screen)
     return 0;
 }
 
-Vector3 projectCoordinate(const Vector3 *p, Matrix4 projectionMatrix)
+Vector3 projectCoordinate(const Vector3 *p, Matrix4 projectionMatrix, const float scale)
 {
     Vector4 v = {p->x, p->y, p->z, 1.0f};
     Vector4 projected = TransformVector4(projectionMatrix, v);
@@ -186,10 +186,10 @@ Vector3 projectCoordinate(const Vector3 *p, Matrix4 projectionMatrix)
     projected.y /= projected.w;
     projected.z /= projected.w;
 
-    return (Vector3){projected.x, projected.y, projected.z};
+    return (Vector3){projected.x * scale, projected.y * scale, projected.z * scale};
 }
 
-int drawModel(ScreenBuffer *screen, const Model3D *model)
+int drawModel(ScreenBuffer *screen, const Model3D *model, const float scale)
 {
     // FIXME dont map textures when there isn't a texture
     if (!screen || !model)
@@ -212,9 +212,9 @@ int drawModel(ScreenBuffer *screen, const Model3D *model)
         Color *texture = model->texture;
         const size_t textureWidth = model->textureWidth;
         const size_t textureHeight = model->textureHeight;
-        Vector3 vertex1 = projectCoordinate(&vertices[faceIndex1], projectionMatrix);
-        Vector3 vertex2 = projectCoordinate(&vertices[faceIndex2], projectionMatrix);
-        Vector3 vertex3 = projectCoordinate(&vertices[faceIndex3], projectionMatrix);
+        Vector3 vertex1 = projectCoordinate(&vertices[faceIndex1], projectionMatrix, scale);
+        Vector3 vertex2 = projectCoordinate(&vertices[faceIndex2], projectionMatrix, scale);
+        Vector3 vertex3 = projectCoordinate(&vertices[faceIndex3], projectionMatrix, scale);
         Vector2 textureCoordinate1 = textureCoordinates[textureIndex1];
         Vector2 textureCoordinate2 = textureCoordinates[textureIndex2];
         Vector2 textureCoordinate3 = textureCoordinates[textureIndex3];

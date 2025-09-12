@@ -30,9 +30,9 @@ int drawTriangle(ScreenBuffer *screen, Vector3 *a, Vector3 *b, Vector3 *c, Vecto
                  Vector2 textureCoordinate3, Color *texture, const size_t textureWidth, const size_t textureHeight);
 static inline int calculateBarycentricCoordinates(Vector2 a, Vector2 b, Vector2 c, Vector2 p,
                                                   float *u, float *v, float *w);
-Vector3 projectCoordinate(const Vector3 *p, Matrix4 projectionMatrix);
+Vector3 projectCoordinate(const Vector3 *p, Matrix4 projectionMatrix, const float scale);
 int clearScreenBuffer(ScreenBuffer *screen);
-int drawModel(ScreenBuffer *screen, const Model3D *model);
+int drawModel(ScreenBuffer *screen, const Model3D *model, const float scale);
 void freeScreenBuffer(ScreenBuffer *screen);
 int rotateModel(Model3D *model, const Axis rotationAxis, const float theta);
 float normalizeDepth(const float z, const float near, const float far);
