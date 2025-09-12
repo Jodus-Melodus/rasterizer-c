@@ -11,6 +11,8 @@
 #include "types.h"
 #include "model.h"
 
+#define PI 3.14159265358979323846f
+
 typedef struct
 {
     PixelColor *buffer;
@@ -29,7 +31,7 @@ int drawTriangle(ScreenBuffer *screen, Point3D *a, Point3D *b, Point3D *c, Point
                  Point2D textureCoordinate3, PixelColor *texture, const size_t textureWidth, const size_t textureHeight);
 static inline int calculateBarycentricCoordinates(Point2D a, Point2D b, Point2D c, Point2D p,
                                                   float *u, float *v, float *w);
-Point3D projectCoordinate(const Point3D *p, const float focalLength);
+Point3D projectCoordinate(const Point3D *p, RasterMatrix4 projectionMatrix);
 int clearScreenBuffer(ScreenBuffer *screen);
 int drawModel(ScreenBuffer *screen, const Model3D *model, const float focalLength);
 void freeScreenBuffer(ScreenBuffer *screen);

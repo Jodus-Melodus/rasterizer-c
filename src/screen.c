@@ -195,18 +195,6 @@ inline int calculateBarycentricCoordinates(Point2D a, Point2D b, Point2D c,
     return 1;
 }
 
-Point3D projectCoordinate(const Point3D *p, const float focalLength)
-{
-    float denominator = focalLength + p->z;
-    if (fabsf(denominator) < 1e-6f)
-        denominator = (denominator < 0 ? -1 : 1) * 1e-6f;
-    Point3D projected = {
-        (focalLength * p->x) / denominator,
-        -(focalLength * p->y) / denominator,
-        p->z};
-    return projected;
-}
-
 int clearScreenBuffer(ScreenBuffer *screen)
 {
     if (!screen || !screen->buffer || !screen->depthBuffer)
@@ -220,11 +208,28 @@ int clearScreenBuffer(ScreenBuffer *screen)
     return 0;
 }
 
+Point3D projectCoordinate(const Point3D *p, RasterMatrix4 projectionMatrix)
+{
+    RasterVector4 v = {p->x, p->y, p->z, 1.0f};
+    RasterVector4 projected = mat4_mul_vec4(projectionMatrix, v);
+
+    if (fabsf(projected.w) < 1e-6f)
+        projected.w = 1e-6f;
+    projected.x /= projected.w;
+    projected.y /= projected.w;
+    projected.z /= projected.w;
+
+    return (Point3D){projected.x, projected.y, projected.z};
+}
+
 int drawModel(ScreenBuffer *screen, const Model3D *model, const float focalLength)
 {
     // FIXME dont map textures when there isn't a texture
     if (!screen || !model)
         return 1;
+
+    float aspect = (float)screen->width / (float)screen->height;
+    RasterMatrix4 projectionMatrix = perspective(PI / 3.0f, aspect, 0.1f, 100.0f);
 
     for (size_t i = 0; i < model->faceCount; i++)
     {
@@ -240,9 +245,9 @@ int drawModel(ScreenBuffer *screen, const Model3D *model, const float focalLengt
         PixelColor *texture = model->texture;
         const size_t textureWidth = model->textureWidth;
         const size_t textureHeight = model->textureHeight;
-        Point3D vertex1 = projectCoordinate(&vertices[faceIndex1], focalLength);
-        Point3D vertex2 = projectCoordinate(&vertices[faceIndex2], focalLength);
-        Point3D vertex3 = projectCoordinate(&vertices[faceIndex3], focalLength);
+        Point3D vertex1 = projectCoordinate(&vertices[faceIndex1], projectionMatrix);
+        Point3D vertex2 = projectCoordinate(&vertices[faceIndex2], projectionMatrix);
+        Point3D vertex3 = projectCoordinate(&vertices[faceIndex3], projectionMatrix);
         Point2D textureCoordinate1 = textureCoordinates[textureIndex1];
         Point2D textureCoordinate2 = textureCoordinates[textureIndex2];
         Point2D textureCoordinate3 = textureCoordinates[textureIndex3];

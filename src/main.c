@@ -7,8 +7,8 @@
 
 int main()
 {
-    const int width = 1280;
-    const int height = 720;
+    const int width = 1700;
+    const int height = 960;
     const float mouseSensitivity = 3.0;
     float focalLength = 50.0f;
     float pitch = 0.0f;
@@ -43,7 +43,7 @@ int main()
             pitch = delta.x / width * mouseSensitivity;
             yaw = delta.y / height * mouseSensitivity;
 
-            rotateModel(model, Y, -pitch);
+            rotateModel(model, Y, pitch);
             rotateModel(model, X, -yaw);
 
             lastMousePos = currentMousePos;
