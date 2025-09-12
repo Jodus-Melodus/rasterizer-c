@@ -175,10 +175,10 @@ int clearScreenBuffer(ScreenBuffer *screen)
     return 0;
 }
 
-Vector3 projectCoordinate(const Vector3 *p, RasterMatrix4 projectionMatrix)
+Vector3 projectCoordinate(const Vector3 *p, Matrix4 projectionMatrix)
 {
     Vector4 v = {p->x, p->y, p->z, 1.0f};
-    Vector4 projected = mat4_mul_vec4(projectionMatrix, v);
+    Vector4 projected = TransformVector4(projectionMatrix, v);
 
     if (fabsf(projected.w) < 1e-6f)
         projected.w = 1e-6f;
@@ -189,14 +189,14 @@ Vector3 projectCoordinate(const Vector3 *p, RasterMatrix4 projectionMatrix)
     return (Vector3){projected.x, projected.y, projected.z};
 }
 
-int drawModel(ScreenBuffer *screen, const Model3D *model, const float focalLength)
+int drawModel(ScreenBuffer *screen, const Model3D *model)
 {
     // FIXME dont map textures when there isn't a texture
     if (!screen || !model)
         return 1;
 
     float aspect = (float)screen->width / (float)screen->height;
-    RasterMatrix4 projectionMatrix = perspective(PI / 3.0f, aspect, 0.1f, 100.0f);
+    Matrix4 projectionMatrix = perspectiveMatrix4(PI / 3.0f, aspect, 0.1f, 100.0f);
 
     for (size_t i = 0; i < model->faceCount; i++)
     {

@@ -1,9 +1,9 @@
 #include "types.h"
 
-RasterMatrix4 perspective(float fov, float aspect, float near, float far)
+Matrix4 perspectiveMatrix4(float fov, float aspect, float near, float far)
 {
     float f = 1.0f / tanf(fov * 0.5f);
-    RasterMatrix4 mat = {0};
+    Matrix4 mat = {0};
     mat.m[0][0] = f / aspect;
     mat.m[1][1] = f;
     mat.m[2][2] = (far + near) / (near - far);
@@ -12,7 +12,7 @@ RasterMatrix4 perspective(float fov, float aspect, float near, float far)
     return mat;
 }
 
-Vector4 mat4_mul_vec4(RasterMatrix4 m, Vector4 v)
+Vector4 TransformVector4(Matrix4 m, Vector4 v)
 {
     Vector4 result = {0};
     for (int i = 0; i < 4; i++)

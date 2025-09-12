@@ -10,7 +10,6 @@ int main()
     const int width = 1700;
     const int height = 960;
     const float mouseSensitivity = 3.0;
-    float focalLength = 50.0f;
     float pitch = 0.0f;
     float yaw = 0.0f;
     Vector2 lastMousePos = GetMousePosition();
@@ -32,7 +31,6 @@ int main()
 
     while (!WindowShouldClose())
     {
-        focalLength += GetMouseWheelMove() * 0.1f;
         if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
         {
             Vector2 currentMousePos = GetMousePosition();
@@ -54,7 +52,7 @@ int main()
         }
 
         clearScreenBuffer(screen);
-        drawModel(screen, model, focalLength);
+        drawModel(screen, model);
 
         UpdateTexture(texture, screen->buffer);
 

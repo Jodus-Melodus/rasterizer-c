@@ -17,10 +17,10 @@ typedef enum
 typedef struct
 {
     float m[4][4];
-} RasterMatrix4;
+} Matrix4;
 
-RasterMatrix4 perspective(float fov, float aspect, float near, float far);
-Vector4 mat4_mul_vec4(RasterMatrix4 m, Vector4 v);
+Matrix4 perspectiveMatrix4(float fov, float aspect, float near, float far);
+Vector4 TransformVector4(Matrix4 m, Vector4 v);
 #endif
 
 // TODO add error enum type
