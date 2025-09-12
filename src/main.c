@@ -20,7 +20,7 @@ int main()
 
     ScreenBuffer *screen = initScreenBuffer(width, height);
     Model3D *model = initModel();
-    loadModelFromFile(model, "../../objects/car.obj", "../../textures/car.png");
+    loadModelFromFile(model, "../../objects/bird.obj", "../../textures/bird.jpg");
 
     Image image = {
         .data = screen->buffer,

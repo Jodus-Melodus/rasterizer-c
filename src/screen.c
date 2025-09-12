@@ -6,14 +6,14 @@ ScreenBuffer *initScreenBuffer(const int width, const int height)
     ScreenBuffer *screen = malloc(sizeof(ScreenBuffer));
     if (!screen)
         return NULL;
-    screen->buffer = malloc(width * height * sizeof(PixelColor));
+    screen->buffer = malloc(width * height * sizeof(Color));
     screen->depthBuffer = malloc(width * height * sizeof(float));
     if (!screen->buffer || !screen->depthBuffer)
     {
         free(screen);
         return NULL;
     }
-    memset(screen->buffer, 0, width * height * sizeof(PixelColor));
+    memset(screen->buffer, 0, width * height * sizeof(Color));
     memset(screen->depthBuffer, 0, width * height * sizeof(float));
     screen->width = width;
     screen->height = height;
@@ -32,9 +32,9 @@ int getIndex(int x, int y, const int width, const int height)
     return width * indexY + indexX;
 }
 
-const PixelColor get(const ScreenBuffer *screen, int x, int y)
+const Color get(const ScreenBuffer *screen, int x, int y)
 {
-    PixelColor color = {0, 0, 0};
+    Color color = {0, 0, 0};
     if (!screen)
         return color;
 
@@ -57,7 +57,7 @@ const float getDepthBuffer(const ScreenBuffer *screen, int x, int y)
     return screen->depthBuffer[index];
 }
 
-int set(ScreenBuffer *screen, int x, int y, PixelColor color)
+int set(ScreenBuffer *screen, int x, int y, Color color)
 {
     if (!screen)
         return 1;
@@ -83,42 +83,9 @@ int setDepthBuffer(ScreenBuffer *screen, int x, int y, float depth)
     return 0;
 }
 
-char *displayScreenBuffer(const ScreenBuffer *screen)
-{
-    if (!screen)
-        return NULL;
-    const size_t perPixel = 20;
-    const size_t total = (size_t)(screen->width * screen->height * perPixel + screen->height + 1);
-    char *output = malloc(total);
-    if (!output)
-        return NULL;
-
-    size_t pos = 0;
-    for (int y = -(screen->height / 2); y < screen->height - (screen->height / 2); ++y)
-    {
-        for (int x = -(screen->width / 2); x < screen->width - (screen->width / 2); ++x)
-        {
-            PixelColor color = get(screen, x, y);
-            char ch = asChar(color);
-            int n = snprintf(output + pos, total - pos,
-                             "\x1b[38;2;%u;%u;%um%c\x1b[0m",
-                             color.r, color.g, color.b, ch);
-            if (n < 0 || (size_t)n >= total - pos)
-            {
-                free(output);
-                return NULL;
-            }
-            pos += (size_t)n;
-        }
-        output[pos++] = '\n';
-    }
-    output[pos] = '\0';
-    return output;
-}
-
-int drawTriangle(ScreenBuffer *screen, Point3D *a, Point3D *b, Point3D *c,
-                 Point2D textureCoordinate1, Point2D textureCoordinate2, Point2D textureCoordinate3,
-                 PixelColor *texture, const size_t textureWidth, const size_t textureHeight)
+int drawTriangle(ScreenBuffer *screen, Vector3 *a, Vector3 *b, Vector3 *c,
+                 Vector2 textureCoordinate1, Vector2 textureCoordinate2, Vector2 textureCoordinate3,
+                 Color *texture, const size_t textureWidth, const size_t textureHeight)
 {
     if (!screen)
         return 1;
@@ -130,15 +97,15 @@ int drawTriangle(ScreenBuffer *screen, Point3D *a, Point3D *b, Point3D *c,
     float near = 0.1;
     float far = 100.0;
 
-    Point2D a2 = {a->x, a->y};
-    Point2D b2 = {b->x, b->y};
-    Point2D c2 = {c->x, c->y};
+    Vector2 a2 = {a->x, a->y};
+    Vector2 b2 = {b->x, b->y};
+    Vector2 c2 = {c->x, c->y};
 
     for (int y = minY; y <= maxY; ++y)
     {
         for (int x = minX; x <= maxX; ++x)
         {
-            Point2D p = {x, y};
+            Vector2 p = {x, y};
             float u, v, w;
             if (!calculateBarycentricCoordinates(a2, b2, c2, p, &u, &v, &w))
                 continue;
@@ -151,7 +118,7 @@ int drawTriangle(ScreenBuffer *screen, Point3D *a, Point3D *b, Point3D *c,
                                                    textureCoordinate3, u, v, w, &textureCoordinateX, &textureCoordinateY,
                                                    textureWidth, textureHeight))
                     continue;
-                PixelColor color = texture[textureCoordinateY * textureWidth + textureCoordinateX];
+                Color color = texture[textureCoordinateY * textureWidth + textureCoordinateX];
 
                 if (depth < getDepthBuffer(screen, x, y))
                 {
@@ -170,8 +137,8 @@ float normalizeDepth(const float z, const float near, const float far)
     return (z - near) / (far - near);
 }
 
-inline int interpolateTextureCoordinates(Point2D textureCoordinate1, Point2D textureCoordinate2,
-                                         Point2D textureCoordinate3, float u, float v, float w, int *textureU, int *textureV,
+inline int interpolateTextureCoordinates(Vector2 textureCoordinate1, Vector2 textureCoordinate2,
+                                         Vector2 textureCoordinate3, float u, float v, float w, int *textureU, int *textureV,
                                          const size_t textureWidth, const size_t textureHeight)
 {
     float textureX = u * textureCoordinate1.x + v * textureCoordinate2.x + w * textureCoordinate3.x;
@@ -183,8 +150,8 @@ inline int interpolateTextureCoordinates(Point2D textureCoordinate1, Point2D tex
     return 1;
 }
 
-inline int calculateBarycentricCoordinates(Point2D a, Point2D b, Point2D c,
-                                           Point2D p, float *u, float *v, float *w)
+inline int calculateBarycentricCoordinates(Vector2 a, Vector2 b, Vector2 c,
+                                           Vector2 p, float *u, float *v, float *w)
 {
     float denom = (b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y);
     if (denom == 0.0f)
@@ -200,7 +167,7 @@ int clearScreenBuffer(ScreenBuffer *screen)
     if (!screen || !screen->buffer || !screen->depthBuffer)
         return 1;
 
-    memset(screen->buffer, 0, screen->height * screen->width * sizeof(PixelColor));
+    memset(screen->buffer, 0, screen->height * screen->width * sizeof(Color));
 
     for (size_t i = 0; i < screen->height * screen->width; ++i)
         screen->depthBuffer[i] = INFINITY;
@@ -208,10 +175,10 @@ int clearScreenBuffer(ScreenBuffer *screen)
     return 0;
 }
 
-Point3D projectCoordinate(const Point3D *p, RasterMatrix4 projectionMatrix)
+Vector3 projectCoordinate(const Vector3 *p, RasterMatrix4 projectionMatrix)
 {
-    RasterVector4 v = {p->x, p->y, p->z, 1.0f};
-    RasterVector4 projected = mat4_mul_vec4(projectionMatrix, v);
+    Vector4 v = {p->x, p->y, p->z, 1.0f};
+    Vector4 projected = mat4_mul_vec4(projectionMatrix, v);
 
     if (fabsf(projected.w) < 1e-6f)
         projected.w = 1e-6f;
@@ -219,7 +186,7 @@ Point3D projectCoordinate(const Point3D *p, RasterMatrix4 projectionMatrix)
     projected.y /= projected.w;
     projected.z /= projected.w;
 
-    return (Point3D){projected.x, projected.y, projected.z};
+    return (Vector3){projected.x, projected.y, projected.z};
 }
 
 int drawModel(ScreenBuffer *screen, const Model3D *model, const float focalLength)
@@ -240,17 +207,17 @@ int drawModel(ScreenBuffer *screen, const Model3D *model, const float focalLengt
         size_t textureIndex2 = model->faces[i][4];
         size_t textureIndex3 = model->faces[i][5];
 
-        Point3D *vertices = model->vertices;
-        Point2D *textureCoordinates = model->textureCoordinates;
-        PixelColor *texture = model->texture;
+        Vector3 *vertices = model->vertices;
+        Vector2 *textureCoordinates = model->textureCoordinates;
+        Color *texture = model->texture;
         const size_t textureWidth = model->textureWidth;
         const size_t textureHeight = model->textureHeight;
-        Point3D vertex1 = projectCoordinate(&vertices[faceIndex1], projectionMatrix);
-        Point3D vertex2 = projectCoordinate(&vertices[faceIndex2], projectionMatrix);
-        Point3D vertex3 = projectCoordinate(&vertices[faceIndex3], projectionMatrix);
-        Point2D textureCoordinate1 = textureCoordinates[textureIndex1];
-        Point2D textureCoordinate2 = textureCoordinates[textureIndex2];
-        Point2D textureCoordinate3 = textureCoordinates[textureIndex3];
+        Vector3 vertex1 = projectCoordinate(&vertices[faceIndex1], projectionMatrix);
+        Vector3 vertex2 = projectCoordinate(&vertices[faceIndex2], projectionMatrix);
+        Vector3 vertex3 = projectCoordinate(&vertices[faceIndex3], projectionMatrix);
+        Vector2 textureCoordinate1 = textureCoordinates[textureIndex1];
+        Vector2 textureCoordinate2 = textureCoordinates[textureIndex2];
+        Vector2 textureCoordinate3 = textureCoordinates[textureIndex3];
 
         drawTriangle(screen, &vertex1, &vertex2, &vertex3, textureCoordinate1,
                      textureCoordinate2, textureCoordinate3, texture, textureWidth,
@@ -279,7 +246,7 @@ int rotateModel(Model3D *model, const Axis rotationAxis, const float theta)
 
     for (size_t i = 0; i < model->vertexCount; i++)
     {
-        Point3D *vertex = &model->vertices[i];
+        Vector3 *vertex = &model->vertices[i];
         const float x = vertex->x;
         const float y = vertex->y;
         const float z = vertex->z;

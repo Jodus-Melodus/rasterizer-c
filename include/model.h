@@ -10,14 +10,14 @@
 
 typedef struct
 {
-    Point3D *vertices;
+    Vector3 *vertices;
     size_t vertexCount;
     size_t (*faces)[6];
     size_t faceCount;
-    PixelColor *texture;
+    Color *texture;
     size_t textureWidth;
     size_t textureHeight;
-    Point2D *textureCoordinates;
+    Vector2 *textureCoordinates;
     size_t textureCoordinateCount;
 } Model3D;
 
